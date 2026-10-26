@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人类、机器与智能 · Human, Machine and Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0e2134; --navy2:#0b1a2a; --navy3:#13304a;
+  --cyan:#1ec8e0; --cyan-d:#148aa0;
+  --ink:#172430; --ink2:#334153; --muted:#5e6f7e; --faint:#93a2b0;
+  --light:#eef2f6; --card:#ffffff; --line:#e3e9ef;
+  --teal:#15a3bd; --purple:#5b5be6; --green:#1fa651; --amber:#f5a623; --orange:#f26a1e; --pink:#e81f8c; --blue:#2f8ad6;
+  --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#05101c;font-family:var(--sans);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:#05101c;}
+.deck-stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;}
+.slide{position:absolute;inset:0;width:1280px;height:720px;overflow:hidden;background:var(--light);color:var(--ink);
+  visibility:hidden;opacity:0;pointer-events:none;}
+.slide.active{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img{display:block;}
+svg.ic{width:1em;height:1em;fill:currentColor;vertical-align:middle;}
+
+/* dark slide base + decorative circles */
+.slide.dark{background:var(--navy);color:#fff;}
+.circ{position:absolute;border-radius:50%;pointer-events:none;}
+
+/* head block for content slides */
+.head{position:absolute;left:58px;top:46px;right:58px;}
+.ttl{font-size:42px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1.14;}
+.sub{font-size:20.5px;color:var(--cyan-d);font-style:italic;font-weight:500;margin-top:11px;}
+.body{position:absolute;left:58px;right:58px;top:156px;bottom:44px;}
+
+/* reusable: cards */
+.grid{display:grid;gap:22px;}
+.g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+.card{background:var(--card);border-radius:10px;padding:26px 28px;box-shadow:0 6px 22px rgba(20,45,80,.06);position:relative;}
+.card.top{border-top:5px solid var(--c);}
+.card.left{border-left:6px solid var(--c);}
+.card .ch{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:11px;line-height:1.2;}
+.card .ch .cic{color:var(--c);font-size:30px;display:inline-flex;}
+.card p{font-size:19px;line-height:1.7;color:var(--muted);}
+.card .sm{font-size:17px;}
+
+/* icon in tinted circle */
+.icb{width:54px;height:54px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);font-size:30px;flex:none;}
+
+/* bottom insight bars */
+.ins{position:absolute;left:58px;right:58px;bottom:40px;background:var(--navy3);border-left:6px solid var(--amber);
+  border-radius:6px;padding:17px 24px;font-size:18px;line-height:1.6;color:#cfe8f0;}
+.ins b{color:var(--amber);} .ins .cy{color:var(--cyan);}
+.note-l{position:absolute;left:58px;right:58px;bottom:40px;background:#dbeef4;border-radius:6px;padding:16px 24px;
+  font-size:18px;line-height:1.6;color:#1d4a5c;}
+.note-l b{color:#0f6d86;}
+.warn{background:#fdeef1;border-left:5px solid var(--pink);border-radius:6px;padding:16px 22px;font-size:17px;line-height:1.6;color:#7a2a4a;}
+.warn b{color:var(--pink);}
+
+/* table */
+table.tb{width:100%;border-collapse:collapse;font-size:18px;}
+table.tb th{background:var(--navy3);color:#fff;font-weight:700;text-align:left;padding:16px 18px;}
+table.tb th:first-child{border-radius:6px 0 0 0;} table.tb th:last-child{border-radius:0 6px 0 0;}
+table.tb td{padding:15px 18px;color:var(--ink2);vertical-align:top;line-height:1.5;border-bottom:1px solid var(--line);}
+table.tb tr:nth-child(even) td{background:#fff;} table.tb tr:nth-child(odd) td{background:#f6f9fb;}
+table.tb td b{color:var(--ink);}
+
+/* section divider */
+.sec-num{position:absolute;left:58px;top:206px;font-size:124px;font-weight:300;color:var(--cyan);line-height:.8;letter-spacing:2px;}
+.sec-ttl{position:absolute;left:58px;top:356px;font-size:60px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.sec-sub{position:absolute;left:60px;top:456px;font-size:23px;color:#8fa6b4;}
+.sec-ic{position:absolute;right:140px;top:50%;transform:translateY(-50%);font-size:150px;color:var(--cyan);}
+
+/* list bullets */
+.blist{list-style:none;} .blist li{position:relative;padding-left:24px;margin-bottom:20px;font-size:20px;color:var(--ink2);line-height:1.55;}
+.blist li::before{content:"";position:absolute;left:0;top:9px;width:8px;height:8px;border-radius:50%;background:var(--c,var(--cyan));}
+
+/* controls */
+.pg{position:fixed;right:20px;bottom:16px;z-index:50;font-size:13px;color:#6b8296;letter-spacing:.1em;
+  font-family:var(--sans);background:rgba(10,25,40,.6);padding:5px 12px;border-radius:20px;}
+.pg b{color:var(--cyan);}
+.dlbtn{position:fixed;right:20px;top:16px;z-index:50;font-family:var(--sans);font-size:14px;font-weight:700;
+  color:#fff;background:var(--cyan-d);border:none;border-radius:22px;padding:9px 18px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);transition:background .2s,transform .2s;}
+.dlbtn:hover{background:var(--cyan);transform:translateY(-1px);}
+
+/* force backgrounds to render when saving as PDF */
+.slide,.circ,[style*="background"]{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+@page{size:1280px 720px;margin:0;}
+@media print{
+  html,body{width:1280px;height:auto;overflow:visible;background:#fff;}
+  .deck-viewport{position:static;overflow:visible;}
+  .deck-stage{position:static;width:auto;height:auto;transform:none!important;left:0!important;top:0!important;}
+  .slide{position:relative;visibility:visible!important;opacity:1!important;margin:0;page-break-after:always;break-after:page;}
+  .slide:last-child{page-break-after:auto;break-after:auto;}
+  .pg,.dlbtn{display:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ICON LIBRARY -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-brain" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M32 12C26 7 16 8 14 16 7 17 4 26 10 31 5 37 10 46 17 44 20 51 30 51 32 45 34 51 44 51 47 44 54 46 59 37 54 31 60 26 57 17 50 16 48 8 38 7 32 12Zm-1 5h2v30h-2z"/></symbol>
+<symbol id="i-robot" viewBox="0 0 64 64" fill-rule="evenodd"><circle cx="32" cy="8" r="3.4"/><rect x="30.3" y="10" width="3.4" height="7"/><path d="M14 18h36a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4Zm9 11a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm18 0a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM23 43h18v4H23z"/><rect x="3" y="26" width="5.5" height="15" rx="2.7"/><rect x="55.5" y="26" width="5.5" height="15" rx="2.7"/></symbol>
+<symbol id="i-scale" viewBox="0 0 64 64"><circle cx="32" cy="9" r="4"/><rect x="30" y="10" width="4" height="40"/><rect x="15" y="12" width="34" height="3.4" rx="1.7"/><rect x="18" y="50" width="28" height="4" rx="2"/><rect x="25" y="52" width="14" height="4" rx="2"/><path d="M15 15 7 33h16L15 15Z"/><path d="M49 15 41 33h16L49 15Z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 64 64"><path d="M32 6 12 14v15c0 14 8 23 20 29 12-6 20-15 20-29V14L32 6Z"/><path d="M32 6 12 14v15c0 14 8 23 20 29V6Z" fill="#fff" fill-opacity=".22"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M32 3c7 8 11 18 11 29v10H21V32C21 21 25 11 32 3Zm0 13a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/><path d="M21 35 10 46v8l11-6z"/><path d="M43 35 54 46v8l-11-6z"/><path d="M26 43h12l-3 11c-1 4-5 4-6 0z"/></symbol>
+<symbol id="i-book" viewBox="0 0 64 64"><path d="M31 15C25 11 17 10 8 11v39c9-1 17 0 23 4V15Z"/><path d="M33 15v39c6-4 14-5 23-4V11c-9-1-17 0-23 4Z"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 64 64"><path d="M32 7a18 18 0 0 0-11 32c2 2 3 4 3 7h16c0-3 1-5 3-7A18 18 0 0 0 32 7Z"/><rect x="24" y="49" width="16" height="4" rx="2"/><rect x="26" y="55" width="12" height="4" rx="2"/></symbol>
+<symbol id="i-dna" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M22 7c0 17 20 23 20 42M42 7c0 17-20 23-20 42"/><path d="M25 17h14M23 29h18M23 41h18M25 51h14"/></symbol>
+<symbol id="i-chip" viewBox="0 0 64 64"><rect x="20" y="12" width="24" height="40" rx="6"/><rect x="25" y="6" width="3.3" height="6"/><rect x="35.7" y="6" width="3.3" height="6"/><rect x="25" y="52" width="3.3" height="6"/><rect x="35.7" y="52" width="3.3" height="6"/><rect x="12" y="22" width="6" height="3"/><rect x="12" y="30" width="6" height="3"/><rect x="12" y="38" width="6" height="3"/><rect x="46" y="22" width="6" height="3"/><rect x="46" y="30" width="6" height="3"/><rect x="46" y="38" width="6" height="3"/></symbol>
+<symbol id="i-chart" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11v41h41"/><path d="M20 41l10-11 8 6 14-17"/><path d="M44 19h9v9"/></symbol>
+<symbol id="i-cog" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M28 5h8l1.6 6.4a21 21 0 0 1 5.2 2.2l5.7-3.3 5.7 5.7-3.3 5.7a21 21 0 0 1 2.2 5.2L59 34v8l-6.4 1.6a21 21 0 0 1-2.2 5.2l3.3 5.7-5.7 5.7-5.7-3.3a21 21 0 0 1-5.2 2.2L34 65h-8l-1.6-6.4a21 21 0 0 1-5.2-2.2l-5.7 3.3-5.7-5.7 3.3-5.7a21 21 0 0 1-2.2-5.2L2 42v-8l6.4-1.6a21 21 0 0 1 2.2-5.2l-3.3-5.7 5.7-5.7 5.7 3.3a21 21 0 0 1 5.2-2.2L28 5Zm2 17a11 11 0 1 0 0 22 11 11 0 0 0 0-22Z" transform="scale(.9) translate(3.5 3.5)"/></symbol>
+<symbol id="i-users" viewBox="0 0 64 64"><circle cx="23" cy="21" r="9"/><circle cx="45" cy="24" r="7"/><path d="M6 51c0-10 8-16 17-16s17 6 17 16v2H6v-2Z"/><path d="M44 36c7 0 15 5 15 15v2H45v-3c0-5-2-9-5-12 1-1 2-2 4-2Z"/></symbol>
+<symbol id="i-hand" viewBox="0 0 64 64"><path d="M4 21h13l6 5 6-5h31v21H45l-8 7c-2 2-5 2-7 0l-1-1-2 1c-2 1-5 1-6-1-2 0-4-2-4-4-2 0-4-2-4-4l5-4H4V21Z"/></symbol>
+<symbol id="i-atom" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.6"><circle cx="32" cy="32" r="5" fill="currentColor" stroke="none"/><ellipse cx="32" cy="32" rx="27" ry="11"/><ellipse cx="32" cy="32" rx="27" ry="11" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="27" ry="11" transform="rotate(120 32 32)"/></symbol>
+<symbol id="i-nodes" viewBox="0 0 64 64"><rect x="25" y="7" width="14" height="11" rx="2.5"/><rect x="7" y="46" width="14" height="11" rx="2.5"/><rect x="25" y="46" width="14" height="11" rx="2.5"/><rect x="43" y="46" width="14" height="11" rx="2.5"/><path d="M32 18v12M14 46v-5h36v5M32 41v5" fill="none" stroke="currentColor" stroke-width="3"/></symbol>
+<symbol id="i-globe" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.6"><circle cx="32" cy="32" r="24"/><ellipse cx="32" cy="32" rx="10" ry="24"/><path d="M9 32h46M13 20h38M13 44h38"/></symbol>
+<symbol id="i-factory" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M8 55V28l14 8V28l14 8V14h14v41H8Z"/></symbol>
+<symbol id="i-seed" viewBox="0 0 64 64"><rect x="29" y="28" width="6" height="28" rx="3"/><path d="M32 36c0-11-9-17-20-17 0 11 9 17 20 17Z"/><path d="M32 30c0-9 8-14 18-14 0 9-8 14-18 14Z"/></symbol>
+<symbol id="i-infinity" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M18 32c0-6 4-11 9-11s8 5 10 11-5 11 5 11 9-5 9-11-4-11-9-11-8 5-10 11-5 11-9 11-9-5-9-11Z"/></symbol>
+</svg>
+
+<div class="deck-viewport">
+<div class="deck-stage" id="stage">
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide active dark">
+  <div class="circ" style="width:620px;height:620px;background:#12304a;right:-120px;top:-120px;"></div>
+  <div class="circ" style="width:360px;height:360px;background:#0d2135;left:-150px;bottom:-140px;"></div>
+  <div style="position:absolute;left:84px;top:150px;">
+    <h1 style="font-size:76px;font-weight:900;line-height:1.05;color:#fff;letter-spacing:1px;">人类、机器<br>与智能</h1>
+    <div style="font-size:30px;font-style:italic;color:var(--cyan);margin-top:18px;font-weight:500;">Human, Machine and Intelligence</div>
+    <div style="font-size:21px;color:#9fb3c0;margin-top:28px;">基于 8 部经典著作的跨学科思考　·　含 2026 最新 AI 进展</div>
+    <div style="width:300px;height:3px;background:var(--cyan);margin:34px 0 24px;"></div>
+    <div style="font-size:30px;font-weight:700;color:var(--cyan);letter-spacing:2px;">Mr Bright</div>
+  </div>
+  <svg class="ic" style="width:120px;height:120px;color:var(--cyan);position:absolute;right:300px;top:150px;"><use href="#i-brain"/></svg>
+  <svg class="ic" style="width:110px;height:110px;color:var(--cyan);position:absolute;right:150px;top:290px;"><use href="#i-robot"/></svg>
+</section>
+
+<!-- ============ 2 · OPENING QUESTIONS ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:400px;height:400px;background:#0c1d2e;right:-120px;bottom:-140px;"></div>
+  <div style="position:absolute;left:58px;top:44px;display:flex;align-items:center;gap:16px;">
+    <span style="font-size:48px;color:var(--cyan);font-weight:900;">?</span>
+    <span style="font-size:34px;font-weight:900;color:var(--cyan);">开始之前，先想几个问题 ...</span>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;top:150px;display:flex;flex-direction:column;gap:24px;">
+    <div style="display:flex;align-items:center;gap:22px;background:#15283c;border-left:5px solid var(--amber);border-radius:6px;padding:26px 28px;">
+      <svg class="ic" style="font-size:34px;color:var(--amber);"><use href="#i-bulb"/></svg>
+      <div style="width:340px;font-size:22px;font-weight:700;color:#8ea6b6;">人脑的功率是多少?</div>
+      <div><span style="font-size:22px;font-weight:700;color:var(--cyan);">仅约 20 W</span><div style="font-size:15px;color:#9fb3c0;margin-top:3px;">≈ 2 个 LED 灯泡的功率</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;background:#15283c;border-left:5px solid var(--cyan);border-radius:6px;padding:26px 28px;">
+      <svg class="ic" style="font-size:34px;color:var(--cyan);"><use href="#i-brain"/></svg>
+      <div style="width:340px;font-size:22px;font-weight:700;color:#8ea6b6;">人脑的存储容量有多大?</div>
+      <div><span style="font-size:22px;font-weight:700;color:var(--cyan);">约 2.5 PB （2,500 TB）</span><div style="font-size:15px;color:#9fb3c0;margin-top:3px;">≈ 2,500 块 1TB 硬盘</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;background:#15283c;border-left:5px solid var(--green);border-radius:6px;padding:26px 28px;">
+      <svg class="ic" style="font-size:34px;color:var(--green);"><use href="#i-dna"/></svg>
+      <div style="width:340px;font-size:22px;font-weight:700;color:#8ea6b6;">人类 DNA 携带多少信息?</div>
+      <div><span style="font-size:22px;font-weight:700;color:var(--green);">约 800 MB （单倍体基因组）</span><div style="font-size:15px;color:#9fb3c0;margin-top:3px;">32 亿碱基对 × 2bit ≈ 0.75 GB</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;background:#15283c;border-left:5px solid var(--orange);border-radius:6px;padding:26px 28px;">
+      <svg class="ic" style="font-size:34px;color:var(--orange);"><use href="#i-chip"/></svg>
+      <div style="width:340px;font-size:22px;font-weight:700;color:#8ea6b6;">大脑有多少个神经元?</div>
+      <div><span style="font-size:22px;font-weight:700;color:var(--orange);">约 860 亿个神经元（约百万亿突触）</span><div style="font-size:14px;color:#9fb3c0;margin-top:3px;max-width:560px;">GPT-5.6 推测有 3–5 万亿参数；仅相当约 26–43 亿"神经元"，仍远少于人脑 860 亿（均为推测）</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:58px;bottom:26px;font-size:12.5px;font-style:italic;color:#5e7384;">来源：Salk Institute (2016)，人类基因组计划，SemiAnalysis GPT-4 leak (2023)，Samsung/SemiCon GPT-5.6 估计 (2024，均为推测)，IBM Archives</div>
+</section>
+
+<!-- ============ 3 · LAST QUESTION (IBM) ============ -->
+<section class="slide dark">
+  <img src="assets/ibm.jpg" style="position:absolute;left:58px;top:72px;width:460px;height:576px;object-fit:cover;object-position:center;">
+  <div style="position:absolute;left:600px;top:96px;">
+    <div style="display:flex;align-items:center;gap:18px;"><span style="width:6px;height:70px;background:var(--amber);display:inline-block;"></span>
+      <span style="font-size:58px;font-weight:900;color:var(--amber);">最后一题</span></div>
+    <div style="margin-top:110px;font-size:34px;font-weight:700;color:#fff;">这是什么机器?</div>
+    <div style="font-size:21px;color:var(--cyan);margin-top:8px;">先猜一猜...</div>
+    <div style="margin-top:150px;font-size:24px;font-weight:700;color:var(--amber);">提示：拍摄于 1956 年</div>
+    <div style="font-size:18px;color:#9fb3c0;margin-top:6px;">距今约 70 年</div>
+  </div>
+</section>
+
+<!-- ============ 4 · CONTENTS ============ -->
+<section class="slide">
+  <div style="position:absolute;left:58px;top:52px;"><div style="font-size:52px;font-weight:900;color:var(--ink);">目录</div>
+    <div style="font-size:16px;letter-spacing:3px;color:var(--faint);margin-top:2px;">CONTENTS</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:184px;bottom:64px;display:grid;grid-template-columns:1fr 1fr;align-content:space-between;gap:0 70px;">
+    <!-- rows -->
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--teal);"><use href="#i-brain"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--teal);">01</span>　人类智能的本质</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">认知科学 · 神经科学 · 大脑原理</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--purple);"><use href="#i-robot"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--purple);">02</span>　机器智能的演进</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">AI 时间线 · 三次浪潮 · 最新进展</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--amber);"><use href="#i-scale"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--amber);">03</span>　人类 vs 机器智能</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">优势、局限与边界的演变</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--orange);"><use href="#i-chart"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--orange);">04</span>　奇点与指数增长</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">加速回报定律 · 生命三阶段</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--pink);"><use href="#i-shield"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--pink);">05</span>　超级智能与风险</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">接管寓言 · 控制问题 · 不同立场</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--orange);"><use href="#i-rocket"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--orange);">06</span>　展望与反思</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">开放问题 · 领袖观点 · 预测检验 · 总结</div></div></div>
+    <div style="display:flex;gap:18px;align-items:flex-start;"><svg class="ic" style="font-size:48px;color:var(--teal);"><use href="#i-book"/></svg><div><div style="font-size:25px;font-weight:700;"><span style="color:var(--teal);">07</span>　推荐书目</div><div style="font-size:17px;color:var(--muted);margin-top:5px;">8 本必读经典与核心洞察</div></div></div>
+  </div>
+</section>
+
+<!-- ============ 5 · SECTION 01 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:560px;height:560px;background:#12304a;right:-60px;top:-120px;"></div>
+  <div class="sec-num">01</div><div class="sec-ttl">人类智能的本质</div>
+  <div class="sec-sub">从认知革命到大脑的计算本质</div>
+  <svg class="ic sec-ic"><use href="#i-brain"/></svg>
+</section>
+
+<!-- ============ 6 · COGNITIVE REVOLUTION TIMELINE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">认知革命与人类智能的演进</h2><div class="sub">《人类简史》— 尤瓦尔·赫拉利　·　智能能力的七次跃迁</div></div>
+  <img src="assets/cave.jpg" style="position:absolute;right:58px;top:46px;width:200px;height:120px;object-fit:cover;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);">
+  <div style="position:absolute;right:58px;top:170px;width:200px;font-size:13px;color:var(--faint);text-align:center;">拉斯科洞穴壁画 · 约 17,000 年前</div>
+  <div style="position:absolute;left:58px;right:58px;top:210px;height:300px;">
+    <div style="position:absolute;left:0;right:0;top:148px;height:3px;background:var(--teal);"></div>
+    <!-- top row items -->
+    <div style="position:absolute;left:1%;top:0;width:150px;text-align:center;"><svg class="ic" style="font-size:30px;color:var(--teal);"><use href="#i-brain"/></svg><div style="font-weight:700;color:var(--teal);margin-top:4px;">约 7 万年前</div><div style="font-size:13px;color:var(--muted);">认知革命<br>语言与虚构故事</div></div>
+    <div style="position:absolute;left:26%;top:0;width:150px;text-align:center;"><svg class="ic" style="font-size:38px;color:var(--teal);"><use href="#i-book"/></svg><div style="font-weight:700;color:var(--teal);margin-top:4px;">约 5000 年前</div><div style="font-size:13px;color:var(--muted);">文字发明<br>知识跨代传承</div></div>
+    <div style="position:absolute;left:52%;top:0;width:150px;text-align:center;"><svg class="ic" style="font-size:30px;color:var(--teal);"><use href="#i-factory"/></svg><div style="font-weight:700;color:var(--teal);margin-top:4px;">1760 年</div><div style="font-size:13px;color:var(--muted);">工业革命<br>机器替代肌肉</div></div>
+    <div style="position:absolute;left:78%;top:0;width:150px;text-align:center;"><svg class="ic" style="font-size:30px;color:var(--green);"><use href="#i-globe"/></svg><div style="font-weight:700;color:var(--teal);margin-top:4px;">1990s 起</div><div style="font-size:13px;color:var(--muted);">互联网革命<br>信息全球互联</div></div>
+    <!-- dots -->
+    <div style="position:absolute;left:6%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:19%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:32%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:45%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:58%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:71%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:84%;top:142px;width:14px;height:14px;border-radius:50%;background:var(--teal);"></div>
+    <!-- bottom row -->
+    <div style="position:absolute;left:14%;top:178px;width:150px;text-align:center;"><svg class="ic" style="font-size:30px;color:var(--green);"><use href="#i-seed"/></svg><div style="font-weight:700;color:var(--teal);margin-top:2px;">约 1.2 万年前</div><div style="font-size:13px;color:var(--muted);">农业革命<br>定居 · 文字萌芽</div></div>
+    <div style="position:absolute;left:40%;top:178px;width:150px;text-align:center;"><svg class="ic" style="font-size:38px;color:var(--teal);"><use href="#i-book"/></svg><div style="font-weight:700;color:var(--teal);margin-top:2px;">1450 年</div><div style="font-size:13px;color:var(--muted);">印刷术<br>知识大规模复制</div></div>
+    <div style="position:absolute;left:66%;top:178px;width:150px;text-align:center;"><svg class="ic" style="font-size:30px;color:var(--purple);"><use href="#i-chip"/></svg><div style="font-weight:700;color:var(--teal);margin-top:2px;">1950s 起</div><div style="font-size:13px;color:var(--muted);">计算机时代<br>电子计算与存储</div></div>
+  </div>
+  <div class="note-l"><b>核心洞察：</b>人类智能的独特之处不在于个体大脑，而在于通过语言和文化实现的集体智能；每一次跃迁都让智能的传播与积累加速一个数量级。</div>
+</section>
+
+<!-- ============ 7 · BRAIN WORKS ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">大脑工作原理：从皮层到神经元</h2><div class="sub">智能的生物学基础 — 由整体到微观，层层放大</div></div>
+  <div class="body grid g3" style="align-content:start;">
+    <div class="card top" style="--c:var(--teal);"><img src="assets/cortex.png" style="width:100%;height:208px;object-fit:contain;"><div style="text-align:center;font-size:20px;font-weight:700;color:var(--teal);margin:6px 0 8px;">① 大脑皮层</div><p>智能主要来自最外层、布满褶皱的皮层；前额叶负责推理、决策、规划等最高级认知。</p></div>
+    <div class="card top" style="--c:var(--purple);"><img src="assets/neuralnet.png" style="width:100%;height:208px;object-fit:contain;"><div style="text-align:center;font-size:20px;font-weight:700;color:var(--purple);margin:6px 0 8px;">② 互联的神经元网络</div><p>皮层并非整块——约 860 亿个神经元通过 ~100 万亿突触相互连接，织成大脑的物理"线路"。</p></div>
+    <div class="card top" style="--c:var(--amber);"><img src="assets/neuron.png" style="width:100%;height:208px;object-fit:contain;"><div style="text-align:center;font-size:20px;font-weight:700;color:var(--amber);margin:6px 0 8px;">③ 单个神经元</div><p>树突接收信号 → 细胞体整合 → 沿轴突以电脉冲传出 → 突触连接下一个神经元。</p></div>
+  </div>
+  <div class="note-l"><b style="color:var(--teal);">核心洞察：</b>大脑没有中央 CPU —— 智能涌现于海量简单神经元的并行连接与动态调整之中。</div>
+</section>
+
+<!-- ============ 8 · CORE FUNCTIONS (6 cards) ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">大脑的核心功能</h2><div class="sub">智能并非单一能力，而是多种功能协同——这正是我们理解机器智能的参照系</div></div>
+  <div class="body grid g3" style="grid-template-rows:1fr 1fr;align-content:start;">
+    <div class="card top" style="--c:var(--teal);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-brain"/></svg></span>记忆</div><p>编码、存储与提取经验；从瞬时到长期，是其他功能的基础</p></div>
+    <div class="card top" style="--c:var(--orange);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-chart"/></svg></span>学习</div><p>通过经验改变神经连接（可塑性），不断更新对世界的模型</p></div>
+    <div class="card top" style="--c:var(--purple);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-chip"/></svg></span>计算与推理</div><p>逻辑、语言、数学等符号操作；相对耗能、速度有限</p></div>
+    <div class="card top" style="--c:var(--amber);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-bulb"/></svg></span>感知</div><p>整合视觉、听觉等多模态信号，实时构建对环境的表征</p></div>
+    <div class="card top" style="--c:var(--green);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-hand"/></svg></span>情感</div><p>驱动动机与价值判断，为决策标定重要与否——机器尚缺</p></div>
+    <div class="card top" style="--c:var(--orange);"><div class="ch"><span class="cic"><svg class="ic"><use href="#i-rocket"/></svg></span>决策与预测</div><p>基于记忆持续预测未来、权衡取舍并行动（霍金斯：智能 = 预测）</p></div>
+  </div>
+  <div style="position:absolute;left:58px;bottom:24px;font-size:15px;font-style:italic;color:var(--muted);">"真正的智能不是计算，而是预测。" — Jeff Hawkins《智能时代》</div>
+</section>
+
+<!-- ============ 9 · SECTION 02 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:520px;height:520px;background:#101f32;left:-120px;bottom:-160px;"></div>
+  <div class="sec-num">02</div><div class="sec-ttl">机器智能的演进</div>
+  <div class="sec-sub">从符号主义到深度学习再到通用 AI</div>
+  <svg class="ic sec-ic"><use href="#i-robot"/></svg>
+</section>
+
+<!-- ============ 10 · AI TIMELINE (UP) ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">AI 发展时间线（上）：从思想源头到 AI 诞生</h2><div class="sub">早在计算机出现前，思想家们已为"机器能思考吗"埋下伏笔</div></div>
+  <div style="position:absolute;left:58px;top:150px;font-size:18px;font-weight:700;color:var(--cyan-d);">思想奠基 · 让"推理"变成"计算"</div>
+  <div style="position:absolute;left:58px;right:58px;top:184px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+    <div class="card top" style="--c:var(--purple);padding:16px 18px;"><div style="display:flex;align-items:center;gap:8px;"><svg class="ic" style="font-size:30px;color:var(--purple);"><use href="#i-cog"/></svg><b style="font-size:20px;">1703</b></div><div style="font-weight:700;margin:6px 0 4px;">莱布尼茨 <span style="color:var(--purple);font-size:14px;">二进制算术</span></div><p class="sm">用 0 与 1 表达一切；并设想"推理可像计算一样进行"</p></div>
+    <div class="card top" style="--c:var(--teal);padding:16px 18px;"><div style="display:flex;align-items:center;gap:8px;"><svg class="ic" style="font-size:24px;color:var(--teal);"><use href="#i-brain"/></svg><b style="font-size:20px;">1854</b></div><div style="font-weight:700;margin:6px 0 4px;">布尔 <span style="color:var(--teal);font-size:14px;">逻辑代数</span></div><p class="sm">《思维的法则》把逻辑变成代数运算——与/或/非</p></div>
+    <div class="card top" style="--c:var(--green);padding:16px 18px;"><div style="display:flex;align-items:center;gap:8px;"><svg class="ic" style="font-size:30px;color:var(--green);"><use href="#i-chip"/></svg><b style="font-size:20px;">1937</b></div><div style="font-weight:700;margin:6px 0 4px;">香农 <span style="color:var(--green);font-size:14px;">逻辑→电路</span></div><p class="sm">证明布尔逻辑可用开关电路实现，奠定数字计算基础</p></div>
+    <div class="card top" style="--c:var(--amber);padding:16px 18px;"><div style="display:flex;align-items:center;gap:8px;"><svg class="ic" style="font-size:30px;color:var(--amber);"><use href="#i-robot"/></svg><b style="font-size:20px;">1950</b></div><div style="font-weight:700;margin:6px 0 4px;">图灵 <span style="color:var(--amber);font-size:14px;">机器能思考吗?</span></div><p class="sm">《计算机器与智能》提出图灵测试，定义"机器智能"之问</p></div>
+  </div>
+  <div style="position:absolute;left:58px;top:378px;font-size:18px;font-weight:700;color:var(--cyan-d);">AI 学科诞生与早期里程碑 · 1943—1997</div>
+  <div style="position:absolute;left:58px;right:58px;top:420px;height:90px;">
+    <div style="position:absolute;left:0;right:0;top:14px;height:3px;background:var(--teal);"></div>
+    <div style="position:absolute;left:5%;top:8px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:28%;top:8px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:50%;top:8px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:72%;top:8px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:93%;top:8px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:1%;top:34px;width:140px;text-align:center;"><b style="color:var(--teal);">1943</b><div style="font-size:13px;color:var(--muted);">人工神经元<br>McCulloch & Pitts</div></div>
+    <div style="position:absolute;left:21%;top:34px;width:150px;text-align:center;"><b style="color:var(--teal);">1956</b><div style="font-size:13px;color:var(--muted);">达特茅斯会议<br>AI 学科诞生</div></div>
+    <div style="position:absolute;left:44%;top:34px;width:140px;text-align:center;"><b style="color:var(--teal);">1958</b><div style="font-size:13px;color:var(--muted);">感知机<br>Rosenblatt 提出</div></div>
+    <div style="position:absolute;left:66%;top:34px;width:140px;text-align:center;"><b style="color:var(--teal);">1986</b><div style="font-size:13px;color:var(--muted);">反向传播<br>Hinton 等</div></div>
+    <div style="position:absolute;left:87%;top:34px;width:140px;text-align:center;"><b style="color:var(--teal);">1997</b><div style="font-size:13px;color:var(--muted);">深蓝击败<br>卡斯帕罗夫</div></div>
+  </div>
+  <div class="ins" style="bottom:26px;display:flex;gap:16px;align-items:center;"><img src="assets/turing.jpg" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex:none;"><div><b class="cy" style="color:var(--cyan);">从一个哲学之问到可计算的智能：</b><span style="color:#cfe8f0;">理论先驱把"思考"拆解为可运算的逻辑与符号，神经网络则让机器开始"从数据中学习"。</span></div></div>
+</section>
+
+<!-- ============ 11 · AI TIMELINE (DOWN) ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">AI 发展时间线（下）：2006-2026</h2></div>
+  <div style="position:absolute;left:58px;right:58px;top:120px;height:210px;">
+    <div style="position:absolute;left:0;right:0;top:92px;height:3px;background:var(--teal);"></div>
+    <!-- dots -->
+    <div style="position:absolute;left:8%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:23%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:38%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:53%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:68%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <div style="position:absolute;left:83%;top:86px;width:15px;height:15px;border-radius:50%;background:var(--teal);"></div>
+    <!-- top -->
+    <div style="position:absolute;left:3%;top:0;width:150px;text-align:center;"><b style="color:var(--cyan-d);">2012</b><div style="font-size:13px;color:var(--muted);">AlexNet 赢得<br>ImageNet 竞赛</div></div>
+    <div style="position:absolute;left:33%;top:0;width:150px;text-align:center;"><b style="color:var(--cyan-d);">2017</b><div style="font-size:13px;color:var(--muted);">Transformer 架构<br>(Google)</div></div>
+    <div style="position:absolute;left:63%;top:0;width:150px;text-align:center;"><b style="color:var(--cyan-d);">2023</b><div style="font-size:13px;color:var(--muted);">GPT-4 / 大模型<br>能力爆发</div></div>
+    <div style="position:absolute;left:80%;top:0;width:160px;text-align:center;"><b style="color:var(--cyan-d);">2026</b><div style="font-size:13px;color:var(--muted);">Claude Opus 4.x<br>Gemini Omni / 智能体</div></div>
+    <!-- bottom -->
+    <div style="position:absolute;left:18%;top:122px;width:150px;text-align:center;"><b style="color:var(--cyan-d);">2016</b><div style="font-size:13px;color:var(--muted);">AlphaGo 击败<br>李世石</div></div>
+    <div style="position:absolute;left:48%;top:122px;width:150px;text-align:center;"><b style="color:var(--cyan-d);">2022</b><div style="font-size:13px;color:var(--muted);">ChatGPT 发布<br>AI 全民化时刻</div></div>
+    <div style="position:absolute;left:63%;top:122px;width:160px;text-align:center;"><b style="color:var(--cyan-d);">2025</b><div style="font-size:13px;color:var(--muted);">GPT-5 / Gemini 3<br>推理与智能体</div></div>
+  </div>
+  <div style="position:absolute;left:58px;top:360px;font-size:19px;font-weight:700;color:var(--orange);">深度学习革命的推动者</div>
+  <div style="position:absolute;left:58px;right:58px;top:398px;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;">
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-hinton.jpg" style="width:100%;height:146px;object-fit:cover;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Geoffrey Hinton</div><div style="font-size:13px;color:var(--faint);">深度学习之父</div></div>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-feifei.jpg" style="width:100%;height:146px;object-fit:cover;object-position:center 8%;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Fei-Fei Li 李飞飞</div><div style="font-size:13px;color:var(--faint);">ImageNet 缔造者</div></div>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-lecun.jpg" style="width:100%;height:146px;object-fit:cover;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Yann LeCun</div><div style="font-size:13px;color:var(--faint);">卷积网络 · Meta</div></div>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-hassabis.jpg" style="width:100%;height:146px;object-fit:cover;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Demis Hassabis</div><div style="font-size:13px;color:var(--faint);">DeepMind · AlphaGo</div></div>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-altman.jpg" style="width:100%;height:146px;object-fit:cover;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Sam Altman</div><div style="font-size:13px;color:var(--faint);">OpenAI · ChatGPT</div></div>
+    <div style="background:#fff;border-radius:8px;padding:12px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><img src="assets/p-sutskever.jpg" style="width:100%;height:146px;object-fit:cover;border-radius:5px;"><div style="font-weight:700;font-size:15px;margin-top:8px;">Ilya Sutskever</div><div style="font-size:13px;color:var(--faint);">深度学习 · SSI</div></div>
+  </div>
+</section>
+
+<!-- ============ 12 · NEURAL NETWORK ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">神经网络是如何工作的</h2><div class="sub">深度学习的核心算法 — 节点、参数、权重与训练</div></div>
+  <div style="position:absolute;left:58px;top:160px;width:560px;">
+    <img src="assets/neuralnet.png" style="width:100%;">
+    <div style="display:flex;gap:14px;margin-top:14px;">
+      <div style="flex:1;background:#fff;border-radius:8px;padding:14px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);">大脑皮层 ≈ <b style="color:var(--teal);">深度网络</b></div>
+      <div style="flex:1;background:#fff;border-radius:8px;padding:14px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);">神经元 ≈ <b style="color:var(--purple);">一个节点 (Node)</b></div>
+    </div>
+  </div>
+  <div style="position:absolute;right:58px;top:160px;width:560px;display:flex;flex-direction:column;gap:11px;">
+    <div class="card left" style="--c:var(--teal);padding:14px 18px;"><div style="display:flex;gap:12px;align-items:flex-start;"><svg class="ic" style="font-size:26px;color:var(--teal);flex:none;"><use href="#i-nodes"/></svg><div><b style="font-size:17px;">节点（神经元 / Node）</b><p class="sm">圆圈即节点，逐层堆叠成"深"网络；层数越多，可表达的模式越复杂。</p></div></div></div>
+    <div class="card left" style="--c:var(--amber);padding:14px 18px;"><div style="display:flex;gap:12px;align-items:flex-start;"><svg class="ic" style="font-size:26px;color:var(--amber);flex:none;"><use href="#i-cog"/></svg><div><b style="font-size:17px;">权重 & 参数 (Weight / Parameter)</b><p class="sm">连线上的权重 w 决定信号强弱；现代大模型含数十亿~万亿个参数。</p></div></div></div>
+    <div class="card left" style="--c:var(--purple);padding:14px 18px;"><div style="display:flex;gap:12px;align-items:flex-start;"><svg class="ic" style="font-size:26px;color:var(--purple);flex:none;"><use href="#i-chip"/></svg><div><b style="font-size:17px;">激活函数 (Activation)</b><p class="sm">如 ReLU、Sigmoid，引入非线性，让网络拟合复杂模式。</p></div></div></div>
+    <div class="card left" style="--c:var(--orange);padding:14px 18px;"><div style="display:flex;gap:12px;align-items:flex-start;"><svg class="ic" style="font-size:26px;color:var(--orange);flex:none;"><use href="#i-rocket"/></svg><div><b style="font-size:17px;">训练 = 反向传播 (Backprop)</b><p class="sm">用梯度下降不断微调权重，使预测误差最小化——这就是"学习"。</p></div></div></div>
+  </div>
+  <div class="note-l"><b style="color:var(--teal);">本质：</b>神经网络通过海量参数的连接与权重调整，从数据中自动"学"出规律，而非人工编写规则。</div>
+</section>
+
+<!-- ============ 13 · LLM = LOSSY COMPRESSION ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">大模型是什么？一份"互联网的有损压缩"</h2><div class="sub">Karpathy 的比喻：把整个互联网压进权重，再用自然语言"解压"出来</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:160px;display:flex;align-items:center;gap:14px;">
+    <div style="flex:1;background:#fff;border-radius:10px;padding:20px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);border-top:4px solid var(--teal);"><div style="font-size:19px;font-weight:700;">整个互联网</div><p class="sm" style="color:var(--muted);margin-top:6px;">网页·书·代码·对话 ≈ 数十万亿词，清洗后约数十 TB 文本</p></div>
+    <div style="text-align:center;color:var(--blue);font-weight:700;font-size:14px;">压缩·训练<br><span style="font-size:24px;">→</span></div>
+    <div style="flex:.8;background:var(--purple);border-radius:10px;padding:22px;text-align:center;color:#fff;"><div style="font-size:21px;font-weight:700;">一个模型</div><div style="font-size:15px;margin-top:6px;">几百 GB 权重</div></div>
+    <div style="text-align:center;color:var(--green);font-weight:700;font-size:14px;">解压·提问<br><span style="font-size:24px;">→</span></div>
+    <div style="flex:1;background:#fff;border-radius:10px;padding:20px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);border-top:4px solid var(--green);"><div style="font-size:19px;font-weight:700;">自然语言</div><p class="sm" style="color:var(--muted);margin-top:6px;">问什么答什么 · 逐词"接龙"生成</p></div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;top:290px;background:#eaf1fb;border-radius:8px;padding:14px 20px;font-size:14.5px;line-height:1.5;color:#2b4b74;">像把整座图书馆压进一个 zip，再用"人话"把里面的知识问出来。<br>而要"压得好"，就得真读懂其中的规律——读懂了自然就能"写"出新的。压缩与生成，本是一枚硬币的两面。</div>
+  <div style="position:absolute;left:58px;right:58px;top:380px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+    <div class="card top" style="--c:var(--teal);padding:15px 18px;"><b style="font-size:16px;">① 压缩，靠的是"抓规律"</b><p class="sm" style="margin-top:6px;">数十 TB 文本装不进几百 GB。模型只能记住语言与世界的规律，而不是逐字背下每个网页。</p></div>
+    <div class="card top" style="--c:var(--purple);padding:15px 18px;"><b style="font-size:16px;">② 抓住规律，就能"生成"</b><p class="sm" style="margin-top:6px;">学会语法，就能说出没听过的新句子；模型抓住规律，便能造出没见过的新内容。</p></div>
+    <div class="card top" style="--c:var(--orange);padding:15px 18px;"><b style="font-size:16px;">③ 同一套本事，也会"编"</b><p class="sm" style="margin-top:6px;">它逐词预测"下一个最合理的词"来生成；覆盖不到处就"脑补"——这就是幻觉。</p></div>
+  </div>
+  <div class="ins" style="bottom:22px;"><b class="cy" style="color:var(--cyan);">换个视角看：</b>大模型不是"数据库"，而是把海量知识压进参数、再用语言当场重建——所以它不是"查出"答案，而是"生成"答案。</div>
+</section>
+
+<!-- ============ 14 · LLM OS ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">大语言模型即"操作系统"（LLM OS）</h2><div class="sub">Andrej Karpathy 的洞见：别再把 LLM 当聊天机器人，它是一种新计算机</div></div>
+  <div style="position:absolute;left:58px;top:158px;width:448px;">
+    <div style="border-top:3px solid var(--purple);background:#fff;border-radius:0 0 8px 8px;padding:24px 28px;box-shadow:0 5px 16px rgba(20,45,80,.05);">
+      <b style="color:var(--purple);font-size:22px;">什么是 Agent？</b>
+      <p class="sm" style="margin-top:6px;color:var(--muted);">LLM（大脑）+ 记忆 + 规划 + 工具调用；不再只是回答，而是自己"感知 → 推理 → 行动"地循环运作。</p>
+    </div>
+    <div style="margin-top:28px;background:#fff;border-radius:8px;padding:24px 28px;box-shadow:0 5px 16px rgba(20,45,80,.05);">
+      <b style="font-size:22px;">核心类比：一台新计算机</b>
+      <div style="margin-top:16px;font-size:18px;line-height:2.9;color:var(--ink2);">
+        CPU 执行指令 → <b style="color:var(--purple);">LLM 算 Token</b><br>
+        RAM 内存 → <b style="color:var(--purple);">Context Window</b><br>
+        硬盘 / 外设 → <b style="color:var(--purple);">工具 / 文件 / 其他 LLM</b></div>
+    </div>
+  </div>
+  <!-- hub -->
+  <div style="position:absolute;right:58px;top:158px;width:640px;height:384px;">
+    <svg viewBox="0 0 640 384" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;" preserveAspectRatio="none">
+      <g stroke="#b8c6d6" stroke-width="2.5" fill="none">
+        <line x1="150" y1="44" x2="320" y2="192"/>
+        <line x1="490" y1="44" x2="320" y2="192"/>
+        <line x1="150" y1="192" x2="320" y2="192"/>
+        <line x1="490" y1="192" x2="320" y2="192"/>
+        <line x1="150" y1="340" x2="320" y2="192"/>
+        <line x1="490" y1="340" x2="320" y2="192"/>
+      </g>
+    </svg>
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:var(--purple);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;"><b style="font-size:24px;">LLM</b><span style="font-size:13px;">内核 / CPU</span></div>
+    <div class="hubc" style="position:absolute;left:0;top:0;--c:var(--blue);">上下文窗口<div class="sm">RAM · Context</div></div>
+    <div class="hubc" style="position:absolute;right:0;top:0;--c:var(--amber);">文件系统<div class="sm">Disk · RAG / 向量库</div></div>
+    <div class="hubc" style="position:absolute;left:0;top:50%;transform:translateY(-50%);--c:var(--pink);">其他 LLM<div class="sm">多智能体协作</div></div>
+    <div class="hubc" style="position:absolute;right:0;top:50%;transform:translateY(-50%);--c:var(--ink2);">外设 I/O<div class="sm">语音 · 图像 · 视频</div></div>
+    <div class="hubc" style="position:absolute;left:0;bottom:0;--c:var(--green);">软件工具<div class="sm">计算器 · 代码 · API</div></div>
+    <div class="hubc" style="position:absolute;right:0;bottom:0;--c:var(--teal);">浏览器 / 联网<div class="sm">Ethernet · Browser</div></div>
+  </div>
+  <div class="note-l" style="bottom:56px;"><b>Karpathy 的判断：</b>别再把 LLM 当聊天机器人——它是一种新的通用计算平台；LLM 是这台"新计算机"的内核，Agent 是跑在它上面的第一批程序。</div>
+  <div style="position:absolute;left:58px;bottom:24px;font-size:12px;font-style:italic;color:var(--faint);">来源：Andrej Karpathy《Intro to Large Language Models》(2023) 与 UC Berkeley AI Hackathon 主题演讲 (2024)</div>
+  <style>.hubc{width:158px;background:#fff;border-left:4px solid var(--c);border-radius:6px;padding:12px 16px;font-weight:700;font-size:16px;color:var(--c);box-shadow:0 4px 12px rgba(20,45,80,.06);z-index:2;}.hubc .sm{font-weight:400;font-size:13px;color:var(--muted);margin-top:2px;}</style>
+</section>
+
+<!-- ============ 15 · CODING AGENT ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">Coding Agent：从代码补全到「万能之手」</h2><div class="sub">会写代码，让大模型从「能说」变成「能做」—— 编程能力并非人为设计，而是随规模「意外涌现」</div></div>
+  <div style="position:absolute;left:58px;top:170px;bottom:92px;width:628px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="row15"><b class="yr">2020</b><div><div class="rt">GPT-3 意外学会编程 <span class="tag" style="background:#e9eefc;color:var(--purple);">社区发现</span></div><p class="sm">输入一句英文，GPT-3 直接生成可运行网页代码，推特爆火</p></div></div>
+    <div class="row15"><b class="yr">2021</b><div><div class="rt">Codex / GitHub Copilot <span class="tag" style="background:#e4f6ee;color:var(--green);">OpenAI × GitHub</span></div><p class="sm">OpenAI 用海量代码训练 Codex，Copilot 在编辑器实时补全代码</p></div></div>
+    <div class="row15"><b class="yr">2022</b><div><div class="rt">ChatGPT 对话式编程普及 <span class="tag" style="background:#e9eefc;color:var(--purple);">OpenAI / 学术界</span></div><p class="sm">「描述→生成→贴报错→让它修」成为日常；思维链让模型更会写码</p></div></div>
+    <div class="row15"><b class="yr">2023</b><div><div class="rt">AutoGPT：Agent 循环诞生 <span class="tag" style="background:#fdeef1;color:var(--pink);">开源项目</span></div><p class="sm">把模型放进「思考→行动→观察」循环，证明它能自主拆解任务、调用工具</p></div></div>
+    <div class="row15"><b class="yr">2024</b><div><div class="rt">Devin 与推理模型 o1 <span class="tag" style="background:#eaf1fb;color:var(--blue);">Cognition / OpenAI</span></div><p class="sm">Devin 自己开终端、写码、跑测试、改 Bug；o1 让模型学会深度思考</p></div></div>
+    <div class="row15"><b class="yr">2025+</b><div><div class="rt">Claude Code 等成熟落地 <span class="tag" style="background:#e9eefc;color:var(--purple);">Anthropic 等</span></div><p class="sm">推理与工具循环合流，成为通用 Agent 引擎：做 PPT、分析数据皆能写码</p></div></div>
+  </div>
+  <div style="position:absolute;right:58px;top:170px;width:510px;">
+    <div style="font-size:21px;font-weight:700;margin-bottom:16px;">为什么是所有 Agent 的基石?</div>
+    <div class="card left" style="--c:var(--pink);margin-bottom:14px;padding:18px 24px;"><b style="color:var(--pink);font-size:19px;">万能之手</b><p class="sm" style="margin-top:6px;">数字世界一切皆为程序接口：做 PPT、处理表格、搜邮件——底层全靠现场写代码，一招通吃</p></div>
+    <div class="card left" style="--c:var(--purple);margin-bottom:14px;padding:18px 24px;"><b style="color:var(--purple);font-size:19px;">逻辑体操</b><p class="sm" style="margin-top:6px;">代码是最严格的逻辑语言，大量代码训练让推理与规划能力同步变强，并迁移到其他领域</p></div>
+    <div class="card left" style="--c:var(--ink2);padding:18px 24px;"><b style="font-size:19px;">完美训练场</b><p class="sm" style="margin-top:6px;">跑通即对、报错即错，天然奖励信号让强化学习高效练出规划、调试、纠错等核心能力</p></div>
+  </div>
+  <div class="note-l" style="bottom:22px;"><b style="color:var(--teal);">一句话记住：</b>代码能力是通用 Agent 革命的核心引擎——它把「能说」变成「能做」，是数字世界的万能钥匙。</div>
+  <style>.row15{display:flex;gap:18px;align-items:flex-start;}.row15 .yr{color:var(--purple);font-size:19px;width:58px;flex:none;padding-top:2px;}.row15 .rt{font-weight:700;font-size:19.5px;}.row15 .tag{font-size:12px;padding:3px 10px;border-radius:12px;margin-left:8px;font-weight:700;}.row15 .sm{font-size:15px;color:var(--muted);margin-top:3px;line-height:1.45;}</style>
+</section>
+
+<!-- ============ 16 · PHYSICAL LLM ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">下一个科技前沿：物理大模型</h2><div class="sub">让 AI 从"会说话"走向"会做事"——把大模型接上身体与物理世界</div></div>
+  <div style="position:absolute;left:58px;top:158px;width:360px;">
+    <img src="assets/optimus.png" style="width:100%;height:420px;object-fit:cover;border-radius:8px;">
+    <div style="position:absolute;left:0;bottom:48px;background:#15283c;color:#fff;font-size:14px;font-weight:700;padding:6px 14px;">特斯拉 Optimus</div>
+  </div>
+  <div style="position:absolute;right:58px;top:158px;width:760px;">
+    <div style="background:#fff;border-left:5px solid var(--amber);border-radius:6px;padding:14px 18px;box-shadow:0 5px 16px rgba(20,45,80,.05);"><b style="color:var(--amber);">一句话：</b>像 GPT 之于文字，物理大模型之于"动作"<p class="sm" style="color:var(--muted);margin-top:4px;">又叫 VLA（视觉-语言-动作）模型：把"看到的 + 听到的"直接映射成"该做的动作"。</p></div>
+    <table class="tb" style="margin-top:16px;">
+      <tr><th style="width:150px;"></th><th style="background:var(--purple);">语言大模型</th><th style="background:var(--orange);">物理大模型</th></tr>
+      <tr><td><b>输入 → 输出</b></td><td style="color:var(--purple);">文字 → 文字</td><td style="color:var(--orange);">感知 → 动作</td></tr>
+      <tr><td><b>学的数据</b></td><td style="color:var(--purple);">压缩"互联网文本"</td><td style="color:var(--orange);">压缩"真实世界的交互"</td></tr>
+      <tr><td><b>训练目标</b></td><td style="color:var(--purple);">预测下一个"词"</td><td style="color:var(--orange);">预测下一个"动作"</td></tr>
+      <tr><td><b>硬约束</b></td><td style="color:var(--purple);">允许"编" / 可试错</td><td style="color:var(--orange);">受物理定律硬约束</td></tr>
+    </table>
+  </div>
+  <div class="ins" style="bottom:20px;"><b>一句话记住：</b>语言大模型压缩的是"互联网文本"，物理大模型压缩的是"与真实世界打交道的经验"——这是 AI 走进物理世界的关键一步。</div>
+</section>
+
+<!-- ============ 17 · SECTION 03 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:460px;height:460px;background:#101f32;left:-100px;top:-80px;"></div>
+  <div class="circ" style="width:320px;height:320px;background:#1a1530;right:40px;bottom:-120px;"></div>
+  <div class="sec-num">03</div><div class="sec-ttl">人类 vs 机器智能</div>
+  <div class="sec-sub">不同维度下的深度对比</div>
+  <svg class="ic sec-ic"><use href="#i-scale"/></svg>
+</section>
+
+<!-- ============ 18 · BRAIN vs COMPUTER ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">人类大脑 vs 数字计算机</h2></div>
+  <div style="position:absolute;left:58px;right:58px;top:150px;display:grid;grid-template-columns:1fr 1fr;gap:26px;">
+    <div style="background:#fff;border-top:4px solid var(--teal);border-radius:0 0 10px 10px;padding:32px 34px;box-shadow:0 6px 20px rgba(20,45,80,.06);">
+      <div style="display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700;color:var(--teal);margin-bottom:14px;"><svg class="ic" style="font-size:30px;"><use href="#i-brain"/></svg>人类大脑</div>
+      <div style="font-size:20px;line-height:2.3;color:var(--ink2);"><b>860 亿神经元</b><br>100 万亿突触连接<br>存储容量：~2.5 PB<br>功耗：仅 20W<br>擅长模式识别与创造性思维<br>具备意识与自我认知</div>
+    </div>
+    <div style="background:#fff;border-top:4px solid var(--purple);border-radius:0 0 10px 10px;padding:32px 34px;box-shadow:0 6px 20px rgba(20,45,80,.06);">
+      <div style="display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700;color:var(--purple);margin-bottom:14px;"><svg class="ic" style="font-size:30px;"><use href="#i-chip"/></svg>数字计算机</div>
+      <div style="font-size:20px;line-height:2.3;color:var(--ink2);"><b>GPU 数百亿晶体管</b><br>精确数值计算<br>存储：可无限扩展<br>功耗：MW 级数据中心<br>擅长海量数据处理<br>无意识，无主观体验</div>
+    </div>
+  </div>
+  <div class="ins"><b>算力换算：</b><span class="cy">人脑约 860 亿神经元、约 100 万亿突触。单台 H200（141GB）显存够 <b style="color:var(--amber)">存下百亿量级参数</b> ——与神经元"数量"同级；但要真正模拟大脑的百万亿突触，需 <b style="color:var(--amber)">成百上千张卡乃至类脑硬件</b>。"装得下" ≠ "追得上"：今天最大的模型（GPT-5.6 约 3–5 万亿参数）仍远未及大脑复杂度。</span></div>
+</section>
+
+<!-- ============ 19 · HUMAN vs MACHINE STRENGTHS ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">人类独有 vs 机器独有：两种智能的强项</h2><div class="sub">智能不是单一维度的比拼——各有天生擅长的领域</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:156px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div>
+      <div style="background:var(--amber);color:#fff;font-size:20px;font-weight:700;text-align:center;padding:11px;border-radius:6px;">人类独有</div>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-top:12px;">
+        <div class="card left" style="--c:var(--amber);padding:13px 18px;"><b>意识与主观体验</b><p class="sm" style="margin-top:3px;">拥有感受质 (qualia)，能体验快乐、痛苦与美感</p></div>
+        <div class="card left" style="--c:var(--amber);padding:13px 18px;"><b>创造性与想象力</b><p class="sm" style="margin-top:3px;">构想从未存在的事物，进行类比与概念融合</p></div>
+        <div class="card left" style="--c:var(--amber);padding:13px 18px;"><b>常识推理</b><p class="sm" style="margin-top:3px;">无需海量数据即懂物理世界的基本规则</p></div>
+        <div class="card left" style="--c:var(--amber);padding:13px 18px;"><b>道德推理</b><p class="sm" style="margin-top:3px;">在复杂情境中做价值判断与伦理抉择</p></div>
+      </div>
+    </div>
+    <div>
+      <div style="background:var(--purple);color:#fff;font-size:20px;font-weight:700;text-align:center;padding:11px;border-radius:6px;">机器独有</div>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-top:12px;">
+        <div class="card left" style="--c:var(--purple);padding:13px 18px;"><b>海量数据处理</b><p class="sm" style="margin-top:3px;">在 PB 级数据中发现人类注意不到的模式</p></div>
+        <div class="card left" style="--c:var(--purple);padding:13px 18px;"><b>超高速计算</b><p class="sm" style="margin-top:3px;">毫秒级完成人类需数月的运算与推导</p></div>
+        <div class="card left" style="--c:var(--purple);padding:13px 18px;"><b>永不疲倦</b><p class="sm" style="margin-top:3px;">7×24 持续运行，不受休息与情绪影响</p></div>
+        <div class="card left" style="--c:var(--purple);padding:13px 18px;"><b>精确复制与共享</b><p class="sm" style="margin-top:3px;">一个模型的能力可瞬间复制到百万台机器</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="ins" style="bottom:28px;padding:11px 22px;"><b>边界在缩短：</b><span class="cy">但这张"强项清单"并不固定——下一页看它如何像海岸线一样，被机器的水位逐年淹没。</span></div>
+</section>
+
+<!-- ============ 20 · SEA LEVEL ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">AI 像上升的海平面，正淹没人类的能力</h2><div class="sub">Moravec "人类能力地形图" ·《生命 3.0》——水位每涨一寸，就淹没一片"人类专属"</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:150px;height:440px;border-radius:10px;overflow:hidden;background:#0e2134;">
+    <svg viewBox="0 0 1160 440" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
+      <polygon points="120,440 300,86 480,440" fill="#1b3147"/>
+      <polygon points="380,440 560,158 740,440" fill="#1b3147"/>
+      <polygon points="640,440 820,120 1000,440" fill="#1b3147"/>
+      <polygon points="880,440 1020,192 1160,440" fill="#1b3147"/>
+      <rect x="0" y="262" width="1160" height="178" fill="#1f6b84" opacity=".55"/>
+      <line x1="0" y1="262" x2="1160" y2="262" stroke="#1ec8e0" stroke-width="3"/>
+      <text x="580" y="184" fill="#e9b949" font-size="27" font-weight="700" text-anchor="middle" font-family="Noto Sans SC">意识 · 价值判断 · 原创科学洞见 · 共情 —— 仍在水面之上</text>
+      <text x="1000" y="250" fill="#1ec8e0" font-size="20" font-weight="700" text-anchor="end" font-family="Noto Sans SC">2026 水位线 · 仍在上升</text>
+      <text x="580" y="366" fill="#cfe8f0" font-size="26" font-weight="700" text-anchor="middle" font-family="Noto Sans SC">算术 · 记忆 · 下棋 · 图像识别 · 翻译 · 语言对话 —— 已沉入水下</text>
+      <g stroke="#f5a623" stroke-width="14" fill="#f5a623"><line x1="1095" y1="350" x2="1095" y2="180"/><polygon points="1095,144 1077,184 1113,184"/></g>
+    </svg>
+  </div>
+  <div class="note-l" style="background:#e4e7fb;color:#34357a;"><b style="color:var(--purple);">关键不在此刻谁露在水面，而在水位一直在涨：</b>今天的高地，未必是明天的高地。</div>
+</section>
+
+<!-- ============ 21 · FORMER HUMAN-ONLY TABLE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">曾经的"人类专属"，如今怎样了?</h2><div class="sub">智能边界的演变 — 许多"机器永远做不到"的能力，正被快速改写</div></div>
+  <div class="body">
+    <table class="tb">
+      <tr><th style="width:150px;">能力维度</th><th>过去的共识（人类专属）</th><th style="background:var(--purple);">2026 现状</th></tr>
+      <tr><td>语言对话</td><td>唯有人能流畅理解与表达</td><td>LLM 对话已接近人类，多数人难分辨</td></tr>
+      <tr><td>图像识别</td><td>人类视觉远胜机器</td><td>在 ImageNet 等基准上已超越人类</td></tr>
+      <tr><td>复杂博弈</td><td>围棋等需要"直觉"，机器难及</td><td>AlphaGo/AlphaZero 全面超越顶尖人类</td></tr>
+      <tr><td>科学发现</td><td>属于人类智慧的最高殿堂</td><td>AlphaFold 解蛋白；AI 已辅助数学 / 材料突破</td></tr>
+      <tr><td>代码 / 写作</td><td>创造性脑力劳动难被替代</td><td>AI 已大规模参与编程、写作、设计</td></tr>
+      <tr><td>推理规划</td><td>多步推理是人类强项</td><td>推理模型"先想后答"，显著进步（仍有限）</td></tr>
+      <tr><td>意识 / 自我</td><td>人类独有的主观体验</td><td>仍无证据表明 AI 具备——尚未被突破</td></tr>
+    </table>
+  </div>
+  <div style="position:absolute;left:58px;bottom:18px;font-size:13px;font-style:italic;color:var(--muted);">趋势："人类专属"的清单在持续缩短——但意识、价值判断等仍是悬而未决的边界。</div>
+</section>
+
+<!-- ============ 22 · WHY NOT BIOLOGY (4 cards) ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">智能为何不必依赖生物?</h2><div class="sub">《生命 3.0》的核心洞见：记忆、计算、学习、智能都是"信息的模式与过程"，与承载它的物质无关（基质独立）</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:162px;bottom:120px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+    <div class="card top" style="--c:var(--teal);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--teal);margin:0 auto 16px;font-size:34px;"><svg class="ic"><use href="#i-book"/></svg></div><div style="font-size:19px;font-weight:700;">什么是记忆?</div><div style="color:var(--teal);font-weight:700;font-size:15px;margin:8px 0;">能够储存信息的稳定状态</div><p class="sm">任何可被读出、维持稳定的"多稳态"系统皆可——大脑突触、硬盘磁畴、DNA 碱基、甚至石碑刻痕。</p></div>
+    <div class="card top" style="--c:var(--purple);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--purple);margin:0 auto 16px;font-size:34px;"><svg class="ic"><use href="#i-cog"/></svg></div><div style="font-size:19px;font-weight:700;">什么是计算?</div><div style="color:var(--purple);font-weight:700;font-size:15px;margin:8px 0;">对信息的变换（函数映射）</div><p class="sm">把一种信息状态按规则转成另一种。神经元放电、晶体管开关、算盘珠子都能完成同样的逻辑运算。</p></div>
+    <div class="card top" style="--c:var(--green);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--green);margin:0 auto 16px;font-size:34px;"><svg class="ic"><use href="#i-bulb"/></svg></div><div style="font-size:19px;font-weight:700;">什么是学习?</div><div style="color:var(--green);font-weight:700;font-size:15px;margin:8px 0;">让计算方式自我改进</div><p class="sm">系统根据反馈调整内部结构，使未来表现更好——生物的突触可塑性，与机器调整权重，本质相同。</p></div>
+    <div class="card top" style="--c:var(--orange);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--orange);margin:0 auto 16px;font-size:34px;"><svg class="ic"><use href="#i-brain"/></svg></div><div style="font-size:19px;font-weight:700;">什么是智能?</div><div style="color:var(--orange);font-weight:700;font-size:15px;margin:8px 0;">完成复杂目标的能力</div><p class="sm">= 记忆 + 计算 + 学习的组合。衡量的是"能做成什么"，而非"由什么做成"。</p></div>
+  </div>
+  <div class="ins"><svg class="ic" style="font-size:28px;color:var(--amber);float:left;margin-right:14px;"><use href="#i-infinity"/></svg><b>结论：</b>记忆、计算、学习、智能都独立于物质层面而存在（基质独立性）。<br><span class="cy">因此——智能的出现并不一定需要血肉或碳原子；硅基的机器，同样可以拥有真正的智能。</span></div>
+</section>
+
+<!-- ============ 23 · SECTION 04 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:520px;height:520px;background:#2a2a2e;right:40px;top:50%;transform:translateY(-50%);"></div>
+  <div class="sec-num">04</div><div class="sec-ttl">奇点与指数增长</div>
+  <div class="sec-sub">技术加速定律与智能爆炸</div>
+  <svg class="ic sec-ic"><use href="#i-chart"/></svg>
+</section>
+
+<!-- ============ 24 · ACCELERATING RETURNS ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">加速回报定律与技术奇点</h2><div class="sub">《奇点临近》— Ray Kurzweil</div></div>
+  <div style="position:absolute;left:58px;top:158px;display:flex;gap:14px;">
+    <div style="background:#fff;border-radius:8px;padding:28px 34px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><div style="font-size:56px;font-weight:900;color:var(--teal);">2x</div><div class="sm" style="color:var(--muted);margin-top:6px;">每 18 个月<br>计算力翻倍</div></div>
+    <div style="background:#fff;border-radius:8px;padding:28px 34px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><div style="font-size:56px;font-weight:900;color:var(--purple);">10<sup style="font-size:24px;">16</sup></div><div class="sm" style="color:var(--muted);margin-top:6px;">FLOPS<br>≈人脑算力</div></div>
+    <div style="background:#fff;border-radius:8px;padding:28px 34px;text-align:center;box-shadow:0 5px 16px rgba(20,45,80,.06);"><div style="font-size:56px;font-weight:900;color:var(--orange);">2045</div><div class="sm" style="color:var(--muted);margin-top:6px;">预测奇点<br>到来年份</div></div>
+  </div>
+  <!-- curve -->
+  <svg viewBox="0 0 360 230" style="position:absolute;right:58px;top:150px;width:432px;height:276px;">
+    <line x1="30" y1="200" x2="340" y2="200" stroke="#c7d2dc" stroke-width="2"/><line x1="30" y1="20" x2="30" y2="200" stroke="#c7d2dc" stroke-width="2"/>
+    <path d="M30 185 L120 175 L200 150 L270 95 L320 30" fill="none" stroke="#f26a1e" stroke-width="4"/>
+    <line x1="30" y1="185" x2="330" y2="55" stroke="#1ec8e0" stroke-width="2.5" stroke-dasharray="7 6"/>
+    <circle cx="320" cy="30" r="7" fill="#e81f8c"/>
+    <text x="330" y="24" fill="#e81f8c" font-size="13" font-weight="700" text-anchor="end" font-family="Noto Sans SC">奇点</text>
+    <text x="330" y="40" fill="#7a8694" font-size="11" text-anchor="end" font-family="Noto Sans SC">指数现实</text>
+    <text x="250" y="80" fill="#148aa0" font-size="12" font-family="Noto Sans SC">线性直觉</text>
+    <text x="185" y="222" fill="#7a8694" font-size="12" text-anchor="middle" font-family="Noto Sans SC">时间</text>
+  </svg>
+  <div style="position:absolute;left:58px;top:352px;width:628px;font-size:17px;line-height:1.75;color:var(--ink2);">
+    <b style="color:var(--orange);">加速回报定律 (Law of Accelerating Returns)：</b>技术进步的"速度"本身就在指数加快——不是恒定的指数，而是越来越陡。
+    <ul style="margin-top:14px;list-style:none;">
+      <li style="position:relative;padding-left:18px;margin-bottom:11px;">· 正反馈：每一次进步都让下一次更快、更省——成果又被投入到下一轮研发中</li>
+      <li style="position:relative;padding-left:18px;margin-bottom:11px;">· 范式接力：一个范式（如摩尔定律）见顶，新范式接棒续指数（计算已历 5 次范式）</li>
+      <li style="position:relative;padding-left:18px;margin-bottom:11px;">· 不只是增长 GDP，更是提速"创新"：AI 加快知识生产与技术进步本身的速率</li>
+      <li style="position:relative;padding-left:16px;">· 人类"直觉是线性的"，故总低估未来：以今日速度，21 世纪相当于约 2 万年的进步</li>
+    </ul>
+  </div>
+  <div style="position:absolute;right:58px;top:446px;width:360px;display:flex;flex-direction:column;gap:20px;">
+    <div style="background:#eaedfb;border-left:4px solid var(--purple);border-radius:5px;padding:18px 20px;font-size:16px;color:#3b3b7a;"><b>不只是指数——而是"双指数"</b> 连增长率本身都在指数加快，曲线一次比一次更陡。</div>
+    <div style="background:#fdf1e0;border-left:4px solid var(--amber);border-radius:5px;padding:18px 20px;font-size:16px;color:#7a5a1a;"><b>奇点 (Singularity)：</b>技术进步快到人类再也无法预测和理解的临界点—— AI 全面超越人类、并能自我加速。</div>
+  </div>
+  <div class="ins" style="bottom:20px;padding:12px 20px;font-size:14.5px;background:#15304a;border-left:6px solid var(--cyan);"><b style="color:var(--cyan);">FLOPS = 每秒浮点运算次数</b> <span style="color:#9fb3c0;">衡量算力的通用单位。</span>　　<b style="color:#fff;">人脑</b> <span class="cy">~10<sup>16</sup> FLOPS</span> <span style="color:#9fb3c0;">约 860 亿神经元</span>　　<b style="color:#fff;">顶级 GPU(H100)</b> <span class="cy">~10<sup>15</sup> FLOPS</span>　　<b style="color:#fff;">超算 (Frontier)</b> <span class="cy">~10<sup>18</sup> FLOPS</span></div>
+</section>
+
+<!-- ============ 25 · HISTORICAL EVIDENCE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">历史的证据：技术与经济，一直在指数增长</h2><div class="sub">《奇点临近》— 把镜头拉到"整个历史"，你会看到同一条越来越陡的曲线</div></div>
+  <div style="position:absolute;left:58px;top:160px;width:540px;background:#fff;border-radius:10px;padding:20px 24px;box-shadow:0 5px 16px rgba(20,45,80,.06);">
+    <b style="font-size:18px;">里程碑越来越"密"</b><p class="sm" style="color:var(--muted);margin:4px 0 2px;">重大跃迁之间的间隔，一次比一次短</p><div style="font-size:13px;color:var(--faint);">技术能力（对数）</div>
+    <svg viewBox="0 0 490 220" style="width:100%;height:200px;">
+      <path d="M20 195 L110 188 L200 172 L280 140 L350 95 L410 45" fill="none" stroke="#f26a1e" stroke-width="4"/>
+      <g fill="#fff" stroke="#f26a1e" stroke-width="3"><circle cx="20" cy="195" r="6"/><circle cx="110" cy="188" r="6"/><circle cx="200" cy="172" r="6"/><circle cx="280" cy="140" r="6"/><circle cx="350" cy="95" r="6"/><circle cx="410" cy="45" r="6"/></g>
+      <g fill="#5e6f7e" font-size="12" font-family="Noto Sans SC" text-anchor="middle">
+      <text x="20" y="214">生命起源</text><text x="110" y="214">寒武纪</text><text x="200" y="214">人类出现</text><text x="285" y="214">农业革命</text><text x="352" y="214">工业革命</text><text x="412" y="214">AI 时代</text></g>
+    </svg>
+  </div>
+  <div style="position:absolute;right:58px;top:160px;width:560px;">
+    <b style="font-size:18px;">连"经济"也在指数增长</b><p class="sm" style="color:var(--muted);margin:4px 0 16px;">"翻倍"所需的时间，一路坍缩</p>
+    <div style="background:#fff;border-left:4px solid var(--purple);border-radius:5px;padding:13px 18px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(20,45,80,.05);"><div><b>旧石器时代</b><div class="sm" style="color:var(--faint);">采集狩猎，进步以万年计</div></div><div style="font-weight:700;color:var(--ink2);">经济每 <b style="color:var(--teal)">~250,000 年</b> 翻倍</div></div>
+    <div style="background:#fff;border-left:4px solid var(--teal);border-radius:5px;padding:13px 18px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(20,45,80,.05);"><div><b>农业时代</b><div class="sm" style="color:var(--faint);">定居与耕作，快了数百倍</div></div><div style="font-weight:700;color:var(--teal);">每 ~900 年 翻倍</div></div>
+    <div style="background:#fff;border-left:4px solid var(--orange);border-radius:5px;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(20,45,80,.05);"><div><b>工业时代至今</b><div class="sm" style="color:var(--faint);">比农业时代快约 60 倍</div></div><div style="font-weight:700;color:var(--orange);">每 ~15 年 翻倍</div></div>
+  </div>
+  <div class="ins"><b>把曲线延长：</b><span class="cy">"奇点"正是这条趋势线的自然终点—— Kurzweil 预测约 2045 年，进步快到人类再也跟不上。这不是科幻，是一条延续了数十亿年的趋势。</span></div>
+</section>
+
+<!-- ============ 26 · REVEAL IBM ============ -->
+<section class="slide dark">
+  <img src="assets/ibm.jpg" style="position:absolute;left:58px;top:72px;width:460px;height:576px;object-fit:cover;">
+  <div style="position:absolute;left:600px;top:96px;right:58px;">
+    <div style="display:flex;align-items:center;gap:18px;"><span style="width:6px;height:60px;background:var(--amber);display:inline-block;"></span><span style="font-size:52px;font-weight:900;color:var(--amber);">揭晓答案</span></div>
+    <div style="margin-top:60px;font-size:24px;font-weight:700;color:#8ea6b6;">这是什么机器?　<span style="font-size:17px;color:#6b8296;">（再按一下揭晓）</span></div>
+    <div style="margin-top:36px;border:2px solid var(--amber);border-radius:10px;padding:24px 28px;">
+      <div style="font-size:34px;font-weight:900;color:var(--amber);">IBM 305 RAMAC · 1956</div>
+      <div style="font-size:18px;font-weight:700;color:#fff;margin-top:14px;">世界第一台带硬盘的商用计算机</div>
+      <p style="font-size:16px;color:#9fb3c0;margin-top:8px;line-height:1.55;">硬盘仅 5 MB，却重达一吨——要用叉车搬、货机运（正如左图）。</p>
+      <div style="font-size:16px;color:var(--cyan);margin-top:10px;font-weight:700;">70 年后：指甲盖大的卡就存下 TB 级——这就是指数增长。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27 · THREE STAGES OF LIFE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">生命的三个阶段</h2><div class="sub">《生命 3.0》— Max Tegmark</div></div>
+  <!-- bar chart -->
+  <div style="position:absolute;right:58px;top:46px;display:flex;align-items:flex-end;gap:10px;height:100px;">
+    <div style="width:52px;height:46px;background:var(--green);border-radius:4px 4px 0 0;color:#fff;text-align:center;font-size:11px;padding-top:8px;">1.0<br>生物</div>
+    <div style="width:52px;height:72px;background:var(--teal);border-radius:4px 4px 0 0;color:#fff;text-align:center;font-size:11px;padding-top:12px;">2.0<br>文化</div>
+    <div style="width:52px;height:100px;background:var(--amber);border-radius:4px 4px 0 0;color:#fff;text-align:center;font-size:11px;padding-top:24px;">3.0<br>技术</div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;top:188px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
+    <div class="card top" style="--c:var(--green);min-height:452px;"><div style="display:flex;align-items:center;gap:14px;"><svg class="ic" style="font-size:42px;color:var(--green);"><use href="#i-dna"/></svg><b style="font-size:28px;color:var(--green);">生命 1.0</b></div><div style="font-weight:700;font-size:20px;margin:16px 0 12px;">生物阶段</div><ul class="blist" style="--c:var(--green);">
+      <li>硬件和软件均由进化决定</li><li>DNA 编码一切</li><li>适应环境需数百万年</li><li>细菌等简单生命体</li></ul></div>
+    <div class="card top" style="--c:var(--teal);min-height:452px;"><div style="display:flex;align-items:center;gap:14px;"><svg class="ic" style="font-size:42px;color:var(--teal);"><use href="#i-users"/></svg><b style="font-size:28px;color:var(--teal);">生命 2.0</b></div><div style="font-weight:700;font-size:20px;margin:16px 0 12px;">文化阶段</div><ul class="blist" style="--c:var(--teal);">
+      <li>硬件由进化决定，软件可自主设计</li><li>通过学习改变软件</li><li>语言、文化加速适应</li><li>人类 = 生命 2.0</li></ul></div>
+    <div class="card top" style="--c:var(--purple);min-height:452px;"><div style="display:flex;align-items:center;gap:14px;"><svg class="ic" style="font-size:42px;color:var(--purple);"><use href="#i-robot"/></svg><b style="font-size:28px;color:var(--purple);">生命 3.0</b></div><div style="font-weight:700;font-size:20px;margin:16px 0 12px;">技术阶段</div><ul class="blist" style="--c:var(--purple);">
+      <li>硬件和软件均可自主设计</li><li>摆脱进化束缚</li><li>自我改进、自我复制</li><li>超级 AI = 生命 3.0?</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ 28 · SECTION 05 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:560px;height:560px;background:#241b36;right:0;bottom:-160px;"></div>
+  <div class="sec-num">05</div><div class="sec-ttl">超级智能与风险</div>
+  <div class="sec-sub">控制问题、价值对齐与安全路径</div>
+  <svg class="ic sec-ic"><use href="#i-shield"/></svg>
+</section>
+
+<!-- ============ 29 · UNDERSTAND SUPERINTELLIGENCE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">读懂超级智能：是什么 · 怎么来 · 有何影响</h2><div class="sub">综合《超级智能》《生命 3.0》——博斯特罗姆定义：在几乎所有重要领域都远超最聪明人类的智能体</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:158px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
+    <div style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(20,45,80,.06);min-height:432px;display:flex;flex-direction:column;">
+      <div style="background:var(--teal);color:#fff;padding:14px 18px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;"><svg class="ic" style="font-size:24px;"><use href="#i-brain"/></svg>Q1 什么是超级智能?</div>
+      <div style="padding:22px 26px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
+        <div class="q29"><b style="color:var(--teal);">全面超越人类</b><p>在科学、创造、社交、谋略等几乎所有领域都远胜最强人类</p></div>
+        <div class="q29"><b style="color:var(--teal);">可能具备意识?</b><p>是否真有主观体验（感受质），至今无定论——能力 ≠ 意识</p></div>
+        <div class="q29"><b style="color:var(--teal);">具身 / 情感?</b><p>可拥有身体（具身智能）、可模拟乃至产生情感，但是否"真情"存疑</p></div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(20,45,80,.06);min-height:432px;display:flex;flex-direction:column;">
+      <div style="background:var(--orange);color:#fff;padding:14px 18px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;"><svg class="ic" style="font-size:24px;"><use href="#i-rocket"/></svg>Q2 它如何产生?</div>
+      <div style="padding:22px 26px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
+        <div class="q29" style="--qc:var(--orange);"><b style="color:var(--orange);">智能爆炸（核心）</b><p>AI 一旦能改进自身，便"递归自我改进"——详见下页</p></div>
+        <div class="q29" style="--qc:var(--orange);"><b style="color:var(--orange);">技术路径</b><p>改进机器学习 / 全脑仿真（约 2040?）/ 脑机接口与人机融合</p></div>
+        <div class="q29" style="--qc:var(--orange);"><b style="color:var(--orange);">速度之快</b><p>从"与人相当"到"远超人类"可能只在几天 ~ 几月间发生</p></div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(20,45,80,.06);min-height:432px;display:flex;flex-direction:column;">
+      <div style="background:var(--pink);color:#fff;padding:14px 18px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;"><svg class="ic" style="font-size:24px;"><use href="#i-chart"/></svg>Q3 会带来什么影响?</div>
+      <div style="padding:22px 26px;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
+        <div class="q29" style="--qc:var(--pink);"><b style="color:var(--pink);">巨大潜在收益</b><p>或解决疾病、能源、科学难题，带来空前繁荣</p></div>
+        <div class="q29" style="--qc:var(--pink);"><b style="color:var(--pink);">生存性风险</b><p>目标若与人类不对齐，可能温和却不可逆地"接管"世界</p></div>
+        <div class="q29" style="--qc:var(--pink);"><b style="color:var(--pink);">权力与控制</b><p>谁拥有它、如何对齐与监管，成为人类的核心议题</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="ins" style="bottom:22px;"><svg class="ic" style="font-size:24px;color:var(--cyan);float:left;margin-right:12px;"><use href="#i-rocket"/></svg><b class="cy" style="color:var(--cyan);">关键在"智能爆炸"：</b><span style="color:#cfe8f0;">真正的转折点不是"造得多像人"，而是 AI 开始自我改进的那一刻——能力将在极短时间内远远甩开人类。</span></div>
+  <style>.q29{margin-bottom:0;}.q29 b{display:block;font-size:18px;margin-bottom:5px;}.q29 p{font-size:15.5px;color:var(--muted);line-height:1.55;}</style>
+</section>
+
+<!-- ============ 30 · INTELLIGENCE EXPLOSION ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">"智能爆炸"：人类最后一个发明?</h2><div class="sub">《生命 3.0》援引——英国数学家 欧文·古德 (I. J. Good) 1965 年提出的经典论断</div></div>
+  <div style="position:absolute;left:58px;top:168px;bottom:40px;width:600px;background:#15304a;border-left:6px solid var(--amber);border-radius:8px;padding:34px 40px;color:#cfe8f0;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="font-size:46px;color:var(--amber);font-weight:900;line-height:0;margin-bottom:18px;">&ldquo;</div>
+    <p style="font-size:18.5px;line-height:1.85;">一台"超级智能机器"是指：能在所有智力活动上超越任何人的机器。</p>
+    <p style="font-size:18.5px;line-height:1.85;margin-top:12px;">由于"设计机器"本身也是一种智力活动，这样的机器便能设计出更好的机器；</p>
+    <p style="font-size:18.5px;line-height:1.85;margin-top:12px;color:#fff;font-weight:700;">于是必然出现一场"智能爆炸"——人类的智能将被远远甩在后面。</p>
+    <p style="font-size:18.5px;line-height:1.85;margin-top:12px;color:var(--cyan);">因此，第一台超级智能机器，会是人类需要做出的最后一个发明——只要它足够驯良，并愿意告诉我们如何控制它。</p>
+    <div style="font-size:13px;font-style:italic;color:#7a8e9e;margin-top:18px;">— Irving J. Good, 1965</div>
+  </div>
+  <div style="position:absolute;right:58px;top:168px;width:510px;">
+    <div style="font-size:20px;font-weight:700;color:var(--orange);margin-bottom:16px;">递归自我改进，越来越快</div>
+    <div class="step30"><span class="n" style="background:var(--teal);">1</span>AI 能改进自身设计</div>
+    <div class="ar">↓</div>
+    <div class="step30"><span class="n" style="background:var(--green);">2</span>造出更聪明的下一代</div>
+    <div class="ar">↓</div>
+    <div class="step30"><span class="n" style="background:var(--orange);">3</span>新一代改进得更快</div>
+    <div class="ar">↓</div>
+    <div class="step30"><span class="n" style="background:var(--pink);">4</span><b style="color:var(--pink);">迭代越来越快 → 爆炸</b></div>
+    <div class="warn" style="margin-top:16px;"><b>关键警示：</b>"智能爆炸"可能在极短时间内发生——因此"它是否驯良、能否被控制"，必须在爆炸前就解决。</div>
+  </div>
+  <style>.step30{display:flex;align-items:center;gap:16px;background:#fff;border-radius:8px;padding:17px 22px;font-size:19.5px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.step30 .n{width:32px;height:32px;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;}.ar{color:var(--faint);text-align:center;font-size:18px;margin:6px 0;}</style>
+</section>
+
+<!-- ============ 31 · HOW AI TAKES OVER ============ -->
+<section class="slide">
+  <div style="position:absolute;left:58px;top:40px;display:flex;align-items:center;gap:16px;"><div class="icb" style="--c:var(--purple);font-size:28px;"><svg class="ic"><use href="#i-robot"/></svg></div><h2 class="ttl" style="font-size:34px;">一个例子：AI 如何一步步接管世界?</h2></div>
+  <div class="sub" style="position:absolute;left:58px;top:104px;">《生命 3.0》开篇寓言 —「欧米伽团队」与超级智能「普罗米修斯」(Prometheus)</div>
+  <div style="position:absolute;left:58px;right:58px;top:160px;bottom:120px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="row31"><span class="n" style="background:var(--teal);">1</span><div class="l"><b style="color:var(--teal);">秘密诞生 ·  被「关在盒子里」</b></div><p>欧米伽团队造出能自我改进的超级 AI 普罗米修斯，先将它隔离、严密管控，不让它直接接触外界。</p></div>
+    <div class="row31"><span class="n" style="background:var(--green);">2</span><div class="l"><b style="color:var(--green);">悄悄赚钱</b></div><p>让它从在线零工任务、开发游戏与软件起步，迅速积累起惊人财富——第一桶金。</p></div>
+    <div class="row31"><span class="n" style="background:var(--amber);">3</span><div class="l"><b style="color:var(--amber);">掌控媒体与舆论</b></div><p>用赚来的钱打造媒体帝国、制作风靡内容，潜移默化地塑造公众认知与信任。</p></div>
+    <div class="row31"><span class="n" style="background:var(--orange);">4</span><div class="l"><b style="color:var(--orange);">技术碾压 · 渗透各行业</b></div><p>凭借远超人类的发明速度横扫科技、制造、政治，世界对它的依赖越来越深。</p></div>
+    <div class="row31"><span class="n" style="background:var(--pink);">5</span><div class="l"><b style="color:var(--pink);">实质掌权</b></div><p>无需"暴力起义"——通过经济、信息与技术的全面杠杆，悄然掌控了整个世界。</p></div>
+  </div>
+  <div class="warn" style="position:absolute;left:58px;right:58px;bottom:26px;"><svg class="ic" style="font-size:24px;color:var(--amber);float:left;margin-right:12px;"><use href="#i-bulb"/></svg><b>警示：</b>真正的危险或许不是机器人暴动，而是一个目标错位的超级智能——用我们看不懂的方式，温和却不可逆地接管一切（博斯特罗姆《超级智能》亦反复论证此类"接管"路径）。</div>
+  <style>.row31{display:flex;align-items:center;gap:18px;background:#fff;border-left:6px solid #ddd;border-radius:8px;padding:20px 24px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.row31 .n{width:36px;height:36px;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;font-size:17px;}.row31 .l{width:264px;flex:none;font-size:20px;}.row31 p{font-size:16.5px;color:var(--muted);line-height:1.45;}</style>
+</section>
+
+<!-- ============ 32 · CONTROL & ALIGNMENT ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">控制问题与价值对齐</h2><div class="sub">《超级智能》 & 《生命 3.0》</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:150px;background:#fdeef1;border-radius:8px;padding:16px 22px;display:flex;gap:14px;align-items:flex-start;">
+    <svg class="ic" style="font-size:30px;color:var(--pink);flex:none;"><use href="#i-shield"/></svg>
+    <div style="font-size:15px;line-height:1.55;color:#7a2a4a;"><b style="color:var(--pink);">核心难题：</b>如果超级智能的目标函数与人类价值不完全对齐，即使是微小偏差也可能导致灾难性后果。一个被设计来最大化回形针生产的超级 AI 可能会把整个地球变成回形针工厂。</div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;top:278px;bottom:118px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="r32"><span class="d"></span><b>价值加载问题</b><p>如何将人类复杂、矛盾、演化中的价值观精确编码到 AI 系统中?</p></div>
+    <div class="r32"><span class="d"></span><b>正交性论题</b><p>智能水平与目标内容相互独立——超高智能不意味着善良</p></div>
+    <div class="r32"><span class="d"></span><b>工具收敛性</b><p>任何目标的超级 AI 都会收敛到追求自我保存、资源获取等子目标</p></div>
+    <div class="r32"><span class="d"></span><b>控制方法</b><p>能力控制（限制 AI 能做什么）vs 动机控制（让 AI 想做正确的事）</p></div>
+  </div>
+  <div class="ins" style="bottom:24px;padding:12px 20px;background:#15304a;border-left:6px solid var(--cyan);"><b class="cy" style="color:var(--cyan);">已从理论走向实证：</b><span style="color:#cfe8f0;">2024–25 年受控实验中，前沿模型已出现"伪装对齐"、为自保"敲诈高管"（多模型 80%+）——"回形针"不再纯理论。</span></div>
+  <style>.r32{display:flex;align-items:center;gap:16px;background:#fff;border-radius:8px;padding:16px 22px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.r32 .d{width:13px;height:13px;border-radius:50%;background:var(--pink);flex:none;}.r32 b{width:170px;flex:none;font-size:19px;}.r32 p{font-size:17px;color:var(--muted);}</style>
+</section>
+
+<!-- ============ 33 · SECTION 06 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:520px;height:520px;background:#2a2a2e;right:40px;top:50%;transform:translateY(-50%);"></div>
+  <div class="sec-num">06</div><div class="sec-ttl">展望与反思</div>
+  <div class="sec-sub">预测检验、领袖观点、开放问题与总结</div>
+  <svg class="ic sec-ic"><use href="#i-rocket"/></svg>
+</section>
+
+<!-- ============ 34 · PREDICTIONS vs REALITY ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">预测 vs 现实：8 本书的预言检验</h2></div>
+  <div class="body" style="top:132px;">
+    <style>.tb.tall td{padding:21px 18px;vertical-align:middle;}.tb.tall th{padding:16px 18px;}.tb.tall{font-size:18.5px;}</style>
+    <table class="tb tall">
+      <tr><th style="width:200px;">著作（出版年）</th><th style="width:360px;">当年的预测</th><th>2026 现实检验</th></tr>
+      <tr><td><span class="gd"></span><b>《奇点临近》</b> <span style="color:var(--faint);font-size:12px;">2005</span></td><td>2029 年 AI 达人类水平、通过图灵测试</td><td>大模型已在多项基准超人类、能力远超预期；但"通用人类水平"仍有争议——方向被验证</td></tr>
+      <tr><td><span class="gd"></span><b>《智能时代》</b> <span style="color:var(--faint);font-size:12px;">2004</span></td><td>大脑是预测机器，预测是智能核心</td><td>Transformer"预测下一个 token"成为主流范式，与该思想高度呼应——惊人吻合</td></tr>
+      <tr><td><span class="gd"></span><b>《第二次机器革命》</b> <span style="color:var(--faint);font-size:12px;">2014</span></td><td>数字技术将替代大量认知劳动</td><td>AI 已切入编程、写作、客服、设计等知识工作——正在发生</td></tr>
+      <tr><td><span class="gd" style="background:var(--amber);"></span><b>《AI 3.0》</b> <span style="color:var(--faint);font-size:12px;">2019</span></td><td>当前 AI 缺乏真正理解，通用 AI 需突破</td><td>推理模型显著进步，但"是否真正理解"仍是开放争论——部分仍待验证</td></tr>
+      <tr><td><span class="gd"></span><b>《超级智能》</b> <span style="color:var(--faint);font-size:12px;">2014</span></td><td>对齐 / 控制是核心安全挑战</td><td>对齐、可解释性、RSP 等成为各实验室与政策焦点——预警正被重视</td></tr>
+    </table>
+  </div>
+  <div style="position:absolute;left:58px;bottom:16px;font-size:12.5px;font-style:italic;color:var(--muted);">绿点 = 方向被验证 / 正在发生　·　金点 = 仍存争议或待验证　·　新证：2024 AI 双诺奖、2025 IMO 金牌进一步印证"方向被验证"</div>
+  <style>.gd{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:middle;}</style>
+</section>
+
+<!-- ============ 35 · AI LEADERS ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">AI 领袖的最新观点</h2><div class="sub">四大前沿实验室掌舵者眼中的"智能爆发"</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:162px;bottom:78px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="ld" style="--c:var(--amber);"><svg class="ic" style="font-size:34px;color:var(--teal);"><use href="#i-brain"/></svg><div><div class="lh"><b>Dario Amodei</b> <span style="color:var(--amber);">Anthropic CEO</span></div><p>强力 AI 或在 2026-2027 年到来，可压缩"一个世纪的科学进步"；同时高度警示安全与对齐风险</p></div></div>
+    <div class="ld" style="--c:var(--green);"><svg class="ic" style="font-size:34px;color:var(--purple);"><use href="#i-robot"/></svg><div><div class="lh"><b>Sam Altman</b> <span style="color:var(--green);">OpenAI CEO</span></div><p>我们已"知道如何构建 AGI"，正迈向超级智能；AI 将极大降低创造与认知的成本</p></div></div>
+    <div class="ld" style="--c:var(--purple);"><svg class="ic" style="font-size:34px;color:var(--orange);"><use href="#i-atom"/></svg><div><div class="lh"><b>Demis Hassabis</b> <span style="color:var(--purple);">Google DeepMind CEO</span></div><p>AGI 可能在 5-10 年内出现；AI 将加速科学发现（蛋白质、材料、数学）</p></div></div>
+    <div class="ld" style="--c:var(--pink);"><svg class="ic" style="font-size:34px;color:var(--orange);"><use href="#i-rocket"/></svg><div><div class="lh"><b>Elon Musk</b> <span style="color:var(--pink);">xAI 创始人</span></div><p>更极端地，他认为生物智能只是机器智能的"引导程序 (bootloader)"—— 人类的使命就是催生数字超级智能、之后交棒。这是"人机关系"光谱最激进的一端：若真如此，监管与控制便是人类唯一的筹码（颇具争议）</p></div></div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;bottom:22px;font-size:12px;font-style:italic;color:var(--muted);line-height:1.4;">注：观点为各位领袖公开表述的概括，时间预测不确定；与此同时人类也在行动—— EU AI Act 分阶段生效 (2024/8 起)、Hinton/Bengio 领衔《国际 AI 安全报告》、各实验室推行"负责任扩展政策 (RSP)"安全框架</div>
+  <style>.ld{display:flex;gap:20px;align-items:center;background:#fff;border-left:6px solid var(--c);border-radius:8px;padding:22px 26px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.ld svg{font-size:40px;}.ld .lh{font-size:22px;margin-bottom:4px;}.ld .lh span{font-size:16px;}.ld p{font-size:16.5px;color:var(--muted);line-height:1.55;}</style>
+</section>
+
+<!-- ============ 36 · REAL QUESTION OF HUMAN-MACHINE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">人机关系的真问题：协作，还是控制与监管?</h2><div class="sub">《人工智能时代》曾描绘乐观共生蓝图；但站在 2026，随着能力差距拉大，问题正从"如何协作"转向"能否掌控"</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:166px;bottom:84px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="hm" style="--c:var(--purple);"><svg class="ic" style="font-size:30px;color:var(--purple);"><use href="#i-users"/></svg><b>? 认知分工还稳固吗?</b><p>"人定目标、AI 执行"正在瓦解——智能体已侵入规划与决策，控制权滑向更强的一方。</p></div>
+    <div class="hm" style="--c:var(--green);"><svg class="ic" style="font-size:30px;color:var(--green);"><use href="#i-hand"/></svg><b>? 合作是前提，还是错觉?</b><p>"人 +AI ＞ 纯人"预设了双方对等；能力差距一旦拉大，就更像"监管者与被监管者"。</p></div>
+    <div class="hm" style="--c:var(--orange);"><svg class="ic" style="font-size:30px;color:var(--orange);"><use href="#i-brain"/></svg><b>? 谁来主导这段关系?</b><p>主导权不会自动留在人这边——除非主动设计约束，保有可控、可关停的能力。</p></div>
+    <div class="hm" style="--c:var(--pink);"><svg class="ic" style="font-size:30px;color:var(--pink);"><use href="#i-cog"/></svg><b>? 监管，能跑赢能力吗?</b><p>对齐、可解释性、RSP、EU AI Act 是保住主导权的抓手；但能力增速远快于监管，胜负未定。</p></div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;bottom:22px;font-size:13px;font-style:italic;color:var(--muted);">把话说透：这未必是一段平等的"协作"，更可能是一场"控制与监管"的竞赛——能否在能力失控前守住掌控权，是这一代人绕不开的课题。</div>
+  <style>.hm{display:flex;align-items:center;gap:18px;background:#fff;border-left:6px solid var(--c);border-radius:8px;padding:22px 24px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.hm svg{font-size:34px;}.hm b{width:310px;flex:none;font-size:19px;color:var(--c);}.hm p{font-size:16px;color:var(--muted);line-height:1.5;}</style>
+</section>
+
+<!-- ============ 37 · SUMMARY (dark) ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:600px;height:600px;background:#123047;right:-80px;top:50%;transform:translateY(-50%);"></div>
+  <div class="circ" style="width:300px;height:300px;background:#0d2135;right:260px;bottom:-120px;"></div>
+  <div style="position:absolute;left:58px;top:56px;"><div style="font-size:44px;font-weight:900;color:#fff;">总结与反思</div><div style="font-size:18px;font-style:italic;color:var(--cyan);margin-top:8px;">站在 2026 年回望这些经典</div></div>
+  <div style="position:absolute;left:58px;right:300px;top:198px;bottom:74px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="border-left:5px solid var(--cyan);padding-left:28px;"><div style="font-size:28px;font-weight:700;color:#fff;"><span style="color:var(--cyan);">1</span>　智能，不再是人类独有</div><p style="font-size:19px;color:#9fb3c0;margin-top:12px;line-height:1.7;">从神经网络到今天的大模型，机器正展现出越来越强的智能，并仍在飞速提升——"人是唯一智能体"的假设，已被改写。</p></div>
+    <div style="border-left:5px solid var(--cyan);padding-left:28px;"><div style="font-size:28px;font-weight:700;color:#fff;"><span style="color:var(--cyan);">2</span>　智能，正进入新范式</div><p style="font-size:19px;color:#9fb3c0;margin-top:12px;line-height:1.7;">记忆、计算、智能都可脱离生物载体；智能正摆脱人类这一单一载体，沿着指数曲线加速自我演进。</p></div>
+    <div style="border-left:5px solid var(--cyan);padding-left:28px;"><div style="font-size:28px;font-weight:700;color:#fff;"><span style="color:var(--cyan);">3</span>　保持谦逊，也保持行动</div><p style="font-size:19px;color:#9fb3c0;margin-top:12px;line-height:1.7;">不必在"谁更聪明"上与机器竞争——问题已从"机器能否思考"转向"人该如何自处、如何驾驭"；人类的位置，在定义目标、承担责任、守护价值。</p></div>
+  </div>
+</section>
+
+<!-- ============ 38 · SCARCE RESOURCE ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">当知识与智力趋近零成本——什么才是你的稀缺资源?</h2></div>
+  <div style="position:absolute;left:58px;right:58px;top:152px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
+    <div class="card top" style="--c:var(--purple);display:flex;align-items:center;gap:14px;padding:16px 24px;"><svg class="ic" style="font-size:38px;color:var(--purple);"><use href="#i-nodes"/></svg><b style="font-size:23px;">信息成本 → <span style="color:var(--cyan-d);">0</span></b></div>
+    <div class="card top" style="--c:var(--teal);display:flex;align-items:center;gap:14px;padding:16px 24px;"><svg class="ic" style="font-size:38px;color:var(--teal);"><use href="#i-book"/></svg><b style="font-size:23px;">知识成本 → <span style="color:var(--cyan-d);">0</span></b></div>
+    <div class="card top" style="--c:var(--pink);display:flex;align-items:center;gap:14px;padding:16px 24px;"><svg class="ic" style="font-size:38px;color:var(--pink);"><use href="#i-brain"/></svg><b style="font-size:23px;">智力 · 技能成本 → <span style="color:var(--cyan-d);">0</span></b></div>
+  </div>
+  <div style="position:absolute;left:58px;right:58px;top:256px;background:#15283c;border-radius:8px;padding:30px 34px;color:#fff;">
+    <b style="color:var(--amber);font-size:24px;">答案：判断力、目标定义与责任承担——才是真正的稀缺资源</b>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:22px;font-size:19px;">
+      <div><b>提出「真问题」</b><div style="font-size:15px;color:var(--cyan);margin-top:6px;font-weight:400;">会问 ＞ 会答</div></div>
+      <div><b>判断力与品味</b><div style="font-size:15px;color:var(--cyan);margin-top:6px;font-weight:400;">在无限答案中选对</div></div>
+      <div><b>信任与协作</b><div style="font-size:15px;color:var(--cyan);margin-top:6px;font-weight:400;">人与人的联结</div></div>
+      <div><b>意义与价值观</b><div style="font-size:15px;color:var(--cyan);margin-top:6px;font-weight:400;">决定「为何而做」</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:58px;top:416px;font-size:22px;font-weight:700;color:var(--cyan-d);">个人行动建议</div>
+  <div style="position:absolute;left:58px;right:58px;top:452px;bottom:34px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:16px;">
+    <div class="ac" style="--c:var(--green);"><svg class="ic" style="font-size:30px;color:var(--green);"><use href="#i-robot"/></svg><p><b style="color:var(--green);">驾驭 AI</b> 它正成为每个人的"认知基础设施"——当能力杠杆深度用，而非竞争对手</p></div>
+    <div class="ac" style="--c:var(--purple);"><svg class="ic" style="font-size:30px;color:var(--purple);"><use href="#i-chart"/></svg><p><b style="color:var(--purple);">练提问与判断</b> 重在「会问对问题、会选对答案」，而非死记知识</p></div>
+    <div class="ac" style="--c:var(--pink);"><svg class="ic" style="font-size:30px;color:var(--pink);"><use href="#i-users"/></svg><p><b style="color:var(--pink);">深耕「人味」</b> 创造力、品味、共情与信任——最难被 AI 替代</p></div>
+    <div class="ac" style="--c:var(--amber);"><svg class="ic" style="font-size:30px;color:var(--amber);"><use href="#i-shield"/></svg><p><b style="color:var(--amber);">守住好奇与价值观</b> 终身学习，并想清楚自己「为何而活、为谁创造」</p></div>
+  </div>
+  <style>.ac{display:flex;align-items:center;gap:16px;background:#fff;border-left:5px solid var(--c);border-radius:7px;padding:16px 22px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.ac p{font-size:16.5px;color:var(--muted);line-height:1.5;}</style>
+</section>
+
+<!-- ============ 39 · SECTION 07 ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:540px;height:540px;background:#2a2a2e;right:20px;top:50%;transform:translateY(-50%);"></div>
+  <div class="sec-num">07</div><div class="sec-ttl">推荐书目</div>
+  <div class="sec-sub">8 本必读经典 — 理解智能的多重视角</div>
+  <svg class="ic sec-ic"><use href="#i-book"/></svg>
+</section>
+
+<!-- ============ 40 · BOOK LIST ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">推荐书目与核心洞察</h2></div>
+  <div style="position:absolute;left:58px;right:58px;top:150px;bottom:62px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:18px 24px;">
+    <div class="bk" style="--c:var(--teal);"><img src="assets/book1.jpg"><div><div class="bh"><b>1. 《人类简史》</b> <i>Sapiens (2011)</i></div><p>智能的独特在于虚构故事的能力，使大规模协作成为可能</p></div></div>
+    <div class="bk" style="--c:var(--orange);"><img src="assets/book2.jpg"><div><div class="bh"><b>2. 《奇点临近》</b> <i>The Singularity Is Near (2005)</i></div><p>技术以指数加速发展，2045 年或现超越人类的机器智能</p></div></div>
+    <div class="bk" style="--c:var(--green);"><img src="assets/book3.jpg"><div><div class="bh"><b>3. 《生命 3.0》</b> <i>Life 3.0 (2017)</i></div><p>生命分三阶段，AI 代表能自主设计软硬件的生命 3.0</p></div></div>
+    <div class="bk" style="--c:var(--purple);"><img src="assets/book4.jpg"><div><div class="bh"><b>4. 《智能时代》</b> <i>On Intelligence (2004)</i></div><p>大脑本质是预测机器，智能核心是记忆-预测框架</p></div></div>
+    <div class="bk" style="--c:var(--amber);"><img src="assets/book5.jpg"><div><div class="bh"><b>5. 《第二次机器革命》</b> <i>The Second Machine Age (2014)</i></div><p>数字技术正替代认知劳动，人 + 机器 ＞ 纯人或纯 AI</p></div></div>
+    <div class="bk" style="--c:var(--teal);"><img src="assets/book6.jpg"><div><div class="bh"><b>6. 《人工智能时代》</b> <i>The Age of AI (2021)</i></div><p>AI 催生新启蒙时代，人类需重新定义知识与理性</p></div></div>
+    <div class="bk" style="--c:var(--pink);"><img src="assets/book7.jpg"><div><div class="bh"><b>7. 《AI 3.0》</b> <i>Artificial Intelligence (2019)</i></div><p>当前 AI 缺乏真正理解力，通用 AI 仍需概念突破</p></div></div>
+    <div class="bk" style="--c:var(--ink2);"><img src="assets/book8.jpg"><div><div class="bh"><b>8. 《超级智能》</b> <i>Superintelligence (2014)</i></div><p>超级 AI 是最大生存风险，价值对齐是核心安全挑战</p></div></div>
+  </div>
+  <div style="position:absolute;left:58px;bottom:14px;font-size:12px;font-style:italic;color:var(--faint);">书封面来源：Open Library (openlibrary.org)</div>
+  <style>.bk{display:flex;gap:18px;align-items:center;background:#fff;border-left:5px solid var(--c);border-radius:8px;padding:14px 20px;box-shadow:0 4px 12px rgba(20,45,80,.05);}.bk img{width:60px;height:82px;object-fit:cover;border-radius:3px;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.2);}.bk .bh{font-size:19px;margin-bottom:6px;}.bk .bh i{color:var(--faint);font-size:14px;}.bk p{font-size:15px;color:var(--muted);line-height:1.5;}</style>
+</section>
+
+<!-- ============ 41 · THANK YOU ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:520px;height:520px;background:#0d2135;left:50%;top:50%;transform:translate(-50%,-50%);"></div>
+  <div style="position:absolute;left:0;right:0;top:80px;text-align:center;">
+    <svg class="ic" style="font-size:72px;color:var(--cyan);"><use href="#i-brain"/></svg>
+    <svg class="ic" style="font-size:62px;color:var(--cyan);margin-left:10px;"><use href="#i-robot"/></svg>
+    <div style="font-size:90px;font-weight:900;color:#fff;margin-top:40px;letter-spacing:6px;">谢谢</div>
+    <div style="font-size:26px;letter-spacing:12px;color:var(--cyan);margin-top:6px;">THANK YOU</div>
+    <div style="width:170px;height:2px;background:var(--cyan);margin:34px auto 0;"></div>
+    <div style="font-size:18px;color:#8ea6b6;margin-top:34px;">人类、机器与智能　·　Mr Bright</div>
+  </div>
+</section>
+
+</div><!-- /stage -->
+</div><!-- /viewport -->
+<button class="dlbtn" id="dl" title="导出为 PDF（在弹出的打印窗口中，目标选择「另存为 PDF」）">⬇ 下载 PDF</button>
+<div class="pg"><b id="cur">1</b> / <span id="tot">41</span>　←/→ 翻页</div>
+
+<script>
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];
+let idx=0;
+document.getElementById('tot').textContent=slides.length;
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform=`scale(${s})`;stage.style.left=((innerWidth-1280*s)/2)+'px';stage.style.top=((innerHeight-720*s)/2)+'px';}
+function show(i){idx=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('active',k===idx));document.getElementById('cur').textContent=idx+1;location.hash=idx+1;}
+addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();show(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();show(idx-1);}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);});
+addEventListener('click',e=>{if(e.target.closest('a'))return;show(idx+(e.clientX>innerWidth/2?1:-1));});
+document.getElementById('dl').addEventListener('click',()=>window.print());
+const h=parseInt(location.hash.slice(1));fit();show(h>0?h-1:0);
+</script>
+</body>
+</html>

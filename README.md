@@ -2,6 +2,11 @@
 
 Bright 的知识总结与洞见 —— decks、笔记与文章。
 
+## 内容
+
+- **《人类、机器与智能》** — 基于 8 部经典著作的跨学科思考（含 2026 最新 AI 进展）
+  👉 [在线阅读](https://zl220.github.io/BrightNotes/human-machine-intelligence/)
+
 ## 说明
 
 这个仓库用来公开发布我整理的学习总结、演示文稿（HTML deck）和文章。
