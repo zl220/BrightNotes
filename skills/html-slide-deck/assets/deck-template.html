@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DECK TITLE · Subtitle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HTML SLIDE DECK TEMPLATE — fixed 16:9 stage, reading-density house style.
+   Replace the example <section class="slide"> blocks with real content.
+   Keep :root tokens, the fixed-stage base, controls, @page, and the <script>.
+   ============================================================ */
+:root{
+  --navy:#0e2134; --navy2:#0b1a2a; --navy3:#13304a;
+  --cyan:#1ec8e0; --cyan-d:#148aa0;
+  --ink:#172430; --ink2:#334153; --muted:#5e6f7e; --faint:#93a2b0;
+  --light:#eef2f6; --card:#ffffff; --line:#e3e9ef;
+  --teal:#15a3bd; --purple:#5b5be6; --green:#1fa651; --amber:#f5a623; --orange:#f26a1e; --pink:#e81f8c; --blue:#2f8ad6;
+  --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#05101c;font-family:var(--sans);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:#05101c;}
+.deck-stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;}
+/* Switch slides with .active — never display:none (a later display:flex can override and show all). */
+.slide{position:absolute;inset:0;width:1280px;height:720px;overflow:hidden;background:var(--light);color:var(--ink);
+  visibility:hidden;opacity:0;pointer-events:none;}
+.slide.active{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img{display:block;}
+svg.ic{width:1em;height:1em;fill:currentColor;vertical-align:middle;}
+
+.slide.dark{background:var(--navy);color:#fff;}
+.circ{position:absolute;border-radius:50%;pointer-events:none;}
+
+/* content-slide header */
+.head{position:absolute;left:58px;top:46px;right:58px;}
+.ttl{font-size:42px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1.14;}
+.sub{font-size:20.5px;color:var(--cyan-d);font-style:italic;font-weight:500;margin-top:11px;}
+.body{position:absolute;left:58px;right:58px;top:156px;bottom:44px;}
+
+/* cards */
+.grid{display:grid;gap:22px;}
+.g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:repeat(3,1fr);} .g4{grid-template-columns:repeat(4,1fr);}
+.card{background:var(--card);border-radius:10px;padding:26px 28px;box-shadow:0 6px 22px rgba(20,45,80,.06);position:relative;}
+.card.top{border-top:5px solid var(--c);}
+.card.left{border-left:6px solid var(--c);}
+.card .ch{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:11px;line-height:1.2;}
+.card .ch .cic{color:var(--c);font-size:30px;display:inline-flex;}
+.card p{font-size:19px;line-height:1.7;color:var(--muted);}
+.card .sm{font-size:17px;}
+.icb{width:54px;height:54px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);font-size:30px;flex:none;}
+
+/* bottom insight bars */
+.ins{position:absolute;left:58px;right:58px;bottom:40px;background:var(--navy3);border-left:6px solid var(--amber);
+  border-radius:6px;padding:17px 24px;font-size:18px;line-height:1.6;color:#cfe8f0;}
+.ins b{color:var(--amber);} .ins .cy{color:var(--cyan);}
+.note-l{position:absolute;left:58px;right:58px;bottom:40px;background:#dbeef4;border-radius:6px;padding:16px 24px;
+  font-size:18px;line-height:1.6;color:#1d4a5c;}
+.note-l b{color:#0f6d86;}
+.warn{background:#fdeef1;border-left:5px solid var(--pink);border-radius:6px;padding:16px 22px;font-size:17px;line-height:1.6;color:#7a2a4a;}
+.warn b{color:var(--pink);}
+
+/* table */
+table.tb{width:100%;border-collapse:collapse;font-size:18px;}
+table.tb th{background:var(--navy3);color:#fff;font-weight:700;text-align:left;padding:16px 18px;}
+table.tb th:first-child{border-radius:6px 0 0 0;} table.tb th:last-child{border-radius:0 6px 0 0;}
+table.tb td{padding:15px 18px;color:var(--ink2);vertical-align:middle;line-height:1.5;border-bottom:1px solid var(--line);}
+table.tb tr:nth-child(odd) td{background:#f6f9fb;}
+table.tb td b{color:var(--ink);}
+
+/* section divider — keep breathing room between number / title / subtitle */
+.sec-num{position:absolute;left:58px;top:206px;font-size:124px;font-weight:300;color:var(--cyan);line-height:.8;letter-spacing:2px;}
+.sec-ttl{position:absolute;left:58px;top:356px;font-size:60px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.sec-sub{position:absolute;left:60px;top:456px;font-size:23px;color:#8fa6b4;}
+.sec-ic{position:absolute;right:140px;top:50%;transform:translateY(-50%);font-size:150px;color:var(--cyan);}
+
+/* list bullets */
+.blist{list-style:none;} .blist li{position:relative;padding-left:24px;margin-bottom:20px;font-size:20px;color:var(--ink2);line-height:1.55;}
+.blist li::before{content:"";position:absolute;left:0;top:9px;width:8px;height:8px;border-radius:50%;background:var(--c,var(--cyan));}
+
+/* controls */
+.pg{position:fixed;right:20px;bottom:16px;z-index:50;font-size:13px;color:#6b8296;letter-spacing:.1em;
+  background:rgba(10,25,40,.6);padding:5px 12px;border-radius:20px;}
+.pg b{color:var(--cyan);}
+.dlbtn{position:fixed;right:20px;top:16px;z-index:50;font-family:var(--sans);font-size:14px;font-weight:700;
+  color:#fff;background:var(--cyan-d);border:none;border-radius:22px;padding:9px 18px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);transition:background .2s,transform .2s;}
+.dlbtn:hover{background:var(--cyan);transform:translateY(-1px);}
+.fsbtn{position:fixed;right:134px;top:16px;z-index:50;font-family:var(--sans);font-size:14px;font-weight:700;
+  color:#fff;background:rgba(20,45,70,.55);border:none;border-radius:22px;padding:9px 16px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);transition:background .2s,transform .2s;}
+.fsbtn:hover{background:var(--cyan-d);transform:translateY(-1px);}
+/* clean presenting view: hide all chrome while fullscreen */
+:fullscreen .dlbtn,:fullscreen .fsbtn,:fullscreen .pg,
+:-webkit-full-screen .dlbtn,:-webkit-full-screen .fsbtn,:-webkit-full-screen .pg{display:none!important;}
+
+/* force backgrounds to render in Save-as-PDF, and make each slide a clean 16:9 page */
+.slide,.circ,[style*="background"]{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+@page{size:1280px 720px;margin:0;}
+@media print{
+  html,body{width:1280px;height:auto;overflow:visible;background:#fff;}
+  .deck-viewport{position:static;overflow:visible;}
+  .deck-stage{position:static;width:auto;height:auto;transform:none!important;left:0!important;top:0!important;}
+  .slide{position:relative;visibility:visible!important;opacity:1!important;margin:0;page-break-after:always;break-after:page;}
+  .slide:last-child{page-break-after:auto;break-after:auto;}
+  .pg,.dlbtn,.fsbtn{display:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ICON LIBRARY (reference with <svg class="ic"><use href="#i-NAME"/></svg>) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-brain" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M32 12C26 7 16 8 14 16 7 17 4 26 10 31 5 37 10 46 17 44 20 51 30 51 32 45 34 51 44 51 47 44 54 46 59 37 54 31 60 26 57 17 50 16 48 8 38 7 32 12Zm-1 5h2v30h-2z"/></symbol>
+<symbol id="i-robot" viewBox="0 0 64 64" fill-rule="evenodd"><circle cx="32" cy="8" r="3.4"/><rect x="30.3" y="10" width="3.4" height="7"/><path d="M14 18h36a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4Zm9 11a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm18 0a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM23 43h18v4H23z"/><rect x="3" y="26" width="5.5" height="15" rx="2.7"/><rect x="55.5" y="26" width="5.5" height="15" rx="2.7"/></symbol>
+<symbol id="i-scale" viewBox="0 0 64 64"><circle cx="32" cy="9" r="4"/><rect x="30" y="10" width="4" height="40"/><rect x="15" y="12" width="34" height="3.4" rx="1.7"/><rect x="18" y="50" width="28" height="4" rx="2"/><rect x="25" y="52" width="14" height="4" rx="2"/><path d="M15 15 7 33h16L15 15Z"/><path d="M49 15 41 33h16L49 15Z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 64 64"><path d="M32 6 12 14v15c0 14 8 23 20 29 12-6 20-15 20-29V14L32 6Z"/><path d="M32 6 12 14v15c0 14 8 23 20 29V6Z" fill="#fff" fill-opacity=".22"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M32 3c7 8 11 18 11 29v10H21V32C21 21 25 11 32 3Zm0 13a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/><path d="M21 35 10 46v8l11-6z"/><path d="M43 35 54 46v8l-11-6z"/><path d="M26 43h12l-3 11c-1 4-5 4-6 0z"/></symbol>
+<symbol id="i-book" viewBox="0 0 64 64"><path d="M31 15C25 11 17 10 8 11v39c9-1 17 0 23 4V15Z"/><path d="M33 15v39c6-4 14-5 23-4V11c-9-1-17 0-23 4Z"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 64 64"><path d="M32 7a18 18 0 0 0-11 32c2 2 3 4 3 7h16c0-3 1-5 3-7A18 18 0 0 0 32 7Z"/><rect x="24" y="49" width="16" height="4" rx="2"/><rect x="26" y="55" width="12" height="4" rx="2"/></symbol>
+<symbol id="i-dna" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M22 7c0 17 20 23 20 42M42 7c0 17-20 23-20 42"/><path d="M25 17h14M23 29h18M23 41h18M25 51h14"/></symbol>
+<symbol id="i-chip" viewBox="0 0 64 64"><rect x="20" y="12" width="24" height="40" rx="6"/><rect x="25" y="6" width="3.3" height="6"/><rect x="35.7" y="6" width="3.3" height="6"/><rect x="25" y="52" width="3.3" height="6"/><rect x="35.7" y="52" width="3.3" height="6"/><rect x="12" y="22" width="6" height="3"/><rect x="12" y="30" width="6" height="3"/><rect x="12" y="38" width="6" height="3"/><rect x="46" y="22" width="6" height="3"/><rect x="46" y="30" width="6" height="3"/><rect x="46" y="38" width="6" height="3"/></symbol>
+<symbol id="i-chart" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11v41h41"/><path d="M20 41l10-11 8 6 14-17"/><path d="M44 19h9v9"/></symbol>
+<symbol id="i-cog" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M28 5h8l1.6 6.4a21 21 0 0 1 5.2 2.2l5.7-3.3 5.7 5.7-3.3 5.7a21 21 0 0 1 2.2 5.2L59 34v8l-6.4 1.6a21 21 0 0 1-2.2 5.2l3.3 5.7-5.7 5.7-5.7-3.3a21 21 0 0 1-5.2 2.2L34 65h-8l-1.6-6.4a21 21 0 0 1-5.2-2.2l-5.7 3.3-5.7-5.7 3.3-5.7a21 21 0 0 1-2.2-5.2L2 42v-8l6.4-1.6a21 21 0 0 1 2.2-5.2l-3.3-5.7 5.7-5.7 5.7 3.3a21 21 0 0 1 5.2-2.2L28 5Zm2 17a11 11 0 1 0 0 22 11 11 0 0 0 0-22Z" transform="scale(.9) translate(3.5 3.5)"/></symbol>
+<symbol id="i-users" viewBox="0 0 64 64"><circle cx="23" cy="21" r="9"/><circle cx="45" cy="24" r="7"/><path d="M6 51c0-10 8-16 17-16s17 6 17 16v2H6v-2Z"/><path d="M44 36c7 0 15 5 15 15v2H45v-3c0-5-2-9-5-12 1-1 2-2 4-2Z"/></symbol>
+<symbol id="i-hand" viewBox="0 0 64 64"><path d="M4 21h13l6 5 6-5h31v21H45l-8 7c-2 2-5 2-7 0l-1-1-2 1c-2 1-5 1-6-1-2 0-4-2-4-4-2 0-4-2-4-4l5-4H4V21Z"/></symbol>
+<symbol id="i-atom" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.6"><circle cx="32" cy="32" r="5" fill="currentColor" stroke="none"/><ellipse cx="32" cy="32" rx="27" ry="11"/><ellipse cx="32" cy="32" rx="27" ry="11" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="27" ry="11" transform="rotate(120 32 32)"/></symbol>
+<symbol id="i-nodes" viewBox="0 0 64 64"><rect x="25" y="7" width="14" height="11" rx="2.5"/><rect x="7" y="46" width="14" height="11" rx="2.5"/><rect x="25" y="46" width="14" height="11" rx="2.5"/><rect x="43" y="46" width="14" height="11" rx="2.5"/><path d="M32 18v12M14 46v-5h36v5M32 41v5" fill="none" stroke="currentColor" stroke-width="3"/></symbol>
+<symbol id="i-globe" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.6"><circle cx="32" cy="32" r="24"/><ellipse cx="32" cy="32" rx="10" ry="24"/><path d="M9 32h46M13 20h38M13 44h38"/></symbol>
+<symbol id="i-factory" viewBox="0 0 64 64" fill-rule="evenodd"><path d="M8 55V28l14 8V28l14 8V14h14v41H8Z"/></symbol>
+<symbol id="i-seed" viewBox="0 0 64 64"><rect x="29" y="28" width="6" height="28" rx="3"/><path d="M32 36c0-11-9-17-20-17 0 11 9 17 20 17Z"/><path d="M32 30c0-9 8-14 18-14 0 9-8 14-18 14Z"/></symbol>
+<symbol id="i-infinity" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M18 32c0-6 4-11 9-11s8 5 10 11-5 11 5 11 9-5 9-11-4-11-9-11-8 5-10 11-5 11-9 11-9-5-9-11Z"/></symbol>
+</svg>
+
+<div class="deck-viewport">
+<div class="deck-stage" id="stage">
+
+<!-- ============ EXAMPLE 1 · COVER (dark) ============ -->
+<section class="slide active dark">
+  <div class="circ" style="width:620px;height:620px;background:#12304a;right:-120px;top:-120px;"></div>
+  <div style="position:absolute;left:84px;top:170px;">
+    <h1 style="font-size:76px;font-weight:900;line-height:1.05;color:#fff;letter-spacing:1px;">主标题<br>第二行</h1>
+    <div style="font-size:30px;font-style:italic;color:var(--cyan);margin-top:18px;font-weight:500;">English Subtitle</div>
+    <div style="font-size:21px;color:#9fb3c0;margin-top:28px;">一行副标题 / 说明</div>
+    <div style="width:300px;height:3px;background:var(--cyan);margin:34px 0 24px;"></div>
+    <div style="font-size:30px;font-weight:700;color:var(--cyan);letter-spacing:2px;">署名</div>
+  </div>
+  <svg class="ic" style="width:120px;height:120px;color:var(--cyan);position:absolute;right:180px;top:200px;"><use href="#i-brain"/></svg>
+</section>
+
+<!-- ============ EXAMPLE 2 · SECTION DIVIDER (dark) ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:560px;height:560px;background:#12304a;right:-60px;top:-120px;"></div>
+  <div class="sec-num">01</div><div class="sec-ttl">章节标题</div>
+  <div class="sec-sub">本章一句话说明</div>
+  <svg class="ic sec-ic"><use href="#i-chart"/></svg>
+</section>
+
+<!-- ============ EXAMPLE 3 · CONTENT: card grid (light). Fills height via min-height + centered content. ============ -->
+<section class="slide">
+  <div class="head"><h2 class="ttl">内容页标题</h2><div class="sub">副标题 — 一句点题的话</div></div>
+  <div style="position:absolute;left:58px;right:58px;top:162px;bottom:120px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;">
+    <div class="card top" style="--c:var(--teal);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--teal);margin:0 auto 16px;"><svg class="ic"><use href="#i-book"/></svg></div><div style="font-size:22px;font-weight:700;">卡片一</div><p class="sm" style="margin-top:8px;">正文说明，控制在两三行，字号够大、读得清。</p></div>
+    <div class="card top" style="--c:var(--purple);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--purple);margin:0 auto 16px;"><svg class="ic"><use href="#i-cog"/></svg></div><div style="font-size:22px;font-weight:700;">卡片二</div><p class="sm" style="margin-top:8px;">正文说明，控制在两三行，字号够大、读得清。</p></div>
+    <div class="card top" style="--c:var(--orange);text-align:center;display:flex;flex-direction:column;justify-content:center;"><div class="icb" style="--c:var(--orange);margin:0 auto 16px;"><svg class="ic"><use href="#i-rocket"/></svg></div><div style="font-size:22px;font-weight:700;">卡片三</div><p class="sm" style="margin-top:8px;">正文说明，控制在两三行，字号够大、读得清。</p></div>
+  </div>
+  <div class="ins"><b>核心结论：</b><span class="cy">一句话总结这一页要点，放在底部深色条里。</span></div>
+</section>
+
+<!-- ============ EXAMPLE 4 · CLOSING (dark) ============ -->
+<section class="slide dark">
+  <div class="circ" style="width:520px;height:520px;background:#0d2135;left:50%;top:50%;transform:translate(-50%,-50%);"></div>
+  <div style="position:absolute;left:0;right:0;top:160px;text-align:center;">
+    <svg class="ic" style="font-size:72px;color:var(--cyan);"><use href="#i-brain"/></svg>
+    <div style="font-size:90px;font-weight:900;color:#fff;margin-top:40px;letter-spacing:6px;">谢谢</div>
+    <div style="font-size:26px;letter-spacing:12px;color:var(--cyan);margin-top:6px;">THANK YOU</div>
+    <div style="width:170px;height:2px;background:var(--cyan);margin:34px auto 0;"></div>
+    <div style="font-size:18px;color:#8ea6b6;margin-top:34px;">标题　·　署名</div>
+  </div>
+</section>
+
+</div><!-- /stage -->
+</div><!-- /viewport -->
+
+<button class="fsbtn" id="fs" title="全屏演示（按 F 键切换）">⛶ 全屏</button>
+<button class="dlbtn" id="dl" title="导出为 PDF（在弹出的打印窗口中，目标选择「另存为 PDF」）">⬇ 下载 PDF</button>
+<div class="pg"><b id="cur">1</b> / <span id="tot">1</span>　←/→ 翻页</div>
+
+<script>
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];
+let idx=0;
+document.getElementById('tot').textContent=slides.length;
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform=`scale(${s})`;stage.style.left=((innerWidth-1280*s)/2)+'px';stage.style.top=((innerHeight-720*s)/2)+'px';}
+function show(i){idx=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('active',k===idx));document.getElementById('cur').textContent=idx+1;location.hash=idx+1;}
+function toggleFS(){const el=document.documentElement;if(!(document.fullscreenElement||document.webkitFullscreenElement)){(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}}
+addEventListener('resize',fit);
+/* clicker remotes send PageDown/PageUp; also handle arrows, Space, Home/End, and F for fullscreen */
+addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();show(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();show(idx-1);}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);else if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFS();}});
+/* click right half = next, left half = prev; ignore clicks on links and control buttons */
+addEventListener('click',e=>{if(e.target.closest('a,button,.pg'))return;show(idx+(e.clientX>innerWidth/2?1:-1));});
+document.getElementById('dl').addEventListener('click',e=>{e.stopPropagation();window.print();});
+document.getElementById('fs').addEventListener('click',e=>{e.stopPropagation();toggleFS();});
+const h=parseInt(location.hash.slice(1));fit();show(h>0?h-1:0);
+</script>
+</body>
+</html>

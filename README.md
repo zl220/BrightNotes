@@ -7,6 +7,10 @@ Bright 的知识总结与洞见 —— decks、笔记与文章。
 - **《人类、机器与智能》** — 基于 8 部经典著作的跨学科思考（含 2026 最新 AI 进展）
   👉 [在线阅读](https://zl220.github.io/BrightNotes/human-machine-intelligence/)
 
+## Skills（可复用工具）
+
+- **[skills/](skills/)** — 可分享、泛化过的 Claude skills（如 `html-slide-deck`：一键做网页版 PPT）。复制到 `~/.claude/skills/` 即可使用。
+
 ## 说明
 
 这个仓库用来公开发布我整理的学习总结、演示文稿（HTML deck）和文章。
