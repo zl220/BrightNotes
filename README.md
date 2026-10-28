@@ -6,6 +6,8 @@ Bright 的知识总结与洞见 —— decks、笔记与文章。
 
 - **《人类、机器与智能》** — 基于 8 部经典著作的跨学科思考（含 2026 最新 AI 进展）
   👉 [在线阅读](https://zl220.github.io/BrightNotes/human-machine-intelligence/)
+- **《Agent 解密与实践》** — 从"什么是 Agent"到"何时该做、怎么做"：一条分界线、一道成本公式、落地的判断与方法
+  👉 [在线阅读](https://zl220.github.io/BrightNotes/agent-talk/)
 
 ## Skills（可复用工具）
 
